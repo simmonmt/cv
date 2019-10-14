@@ -1,5 +1,8 @@
 cc_binary(
     name = "qrcode",
     srcs = ["qr_main.cc"],
-    deps = ["@opencv//:opencv"],
+    deps = [
+        "@com_github_gflags_gflags//:gflags",
+        "@opencv//:opencv",
+    ],
 )

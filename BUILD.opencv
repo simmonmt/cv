@@ -4,6 +4,7 @@ cc_library(
     srcs = [
         "lib/libopencv_core.dylib",
         "lib/libopencv_highgui.dylib",
+        "lib/libopencv_imgcodecs.dylib",
         "lib/libopencv_imgproc.dylib",
     ],
     visibility = ["//visibility:public"],
