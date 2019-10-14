@@ -1,0 +1,5 @@
+cc_binary(
+    name = "qrcode",
+    srcs = ["qr_main.cc"],
+    deps = ["@opencv//:opencv"],
+)
