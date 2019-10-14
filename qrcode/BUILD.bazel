@@ -9,3 +9,23 @@ cc_binary(
         "@com_google_absl//absl/types:span",
     ],
 )
+
+cc_library(
+    name = "runner",
+    srcs = [ "runner.cc" ],
+    hdrs = [ "runner.h" ],
+    deps = [
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "runner_test",
+    srcs = [ "runner_test.cc" ],
+    size = "small",
+    deps = [
+        ":runner",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
