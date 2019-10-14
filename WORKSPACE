@@ -12,3 +12,9 @@ git_repository(
     commit = "30dbc81fb5ffdc98ea9b14b1918bfe4e8779b26e", # v2.2.0 + fix of include path
     remote = "https://github.com/gflags/gflags.git"
 )
+
+git_repository(
+    name = "com_google_absl",
+    tag = "20190808",
+    remote = "https://github.com/abseil/abseil-cpp.git",
+)
