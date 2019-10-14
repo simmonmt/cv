@@ -21,8 +21,14 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  cv::Mat gray;
+  cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
+
+  cv::Mat bw;
+  cv::threshold(gray, bw, 127, 255, cv::THRESH_BINARY);
+
   cv::namedWindow(kWindowName, 1);
-  cv::imshow(kWindowName, input);
+  cv::imshow(kWindowName, bw);
   cv::waitKey(0);
 
   return 0;
