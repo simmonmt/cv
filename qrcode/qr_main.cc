@@ -1,7 +1,8 @@
-#include "absl/strings/str_format.h"
-#include "absl/strings/string_view.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -21,6 +22,14 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
   cv::threshold(gray, out, 127, 255, cv::THRESH_BINARY);
 
   return 0;
+}
+
+int processRow(absl::Span<uchar> row) {
+  int num = 0;
+  for (const auto p : row) {
+    num += p == 0;
+  }
+  return num;
 }
 
 }  // namespace
@@ -50,10 +59,7 @@ int main(int argc, char** argv) {
 
   uchar* p = image.ptr<uchar>(0);
   for (int row = 0; row < image.rows; ++row) {
-    int num = 0;
-    for (int col = 0; col < image.cols; ++col) {
-      num += p[row*image.cols + col] == 0;
-    }
+    int num = processRow(absl::Span<uchar>(p+row*image.cols, image.cols));
     std::cout << absl::StrFormat("row %d: %d\n", row, num);
   }
 
