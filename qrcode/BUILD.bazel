@@ -4,5 +4,6 @@ cc_binary(
     deps = [
         "@com_github_gflags_gflags//:gflags",
         "@opencv//:opencv",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
