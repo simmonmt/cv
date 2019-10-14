@@ -1,15 +1,12 @@
 #include "absl/strings/str_format.h"
-#include "gflags/gflags.h"
+#include "absl/strings/string_view.h"
+#include "absl/flags/flag.h"
+#include "absl/flags/parse.h"
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
-DEFINE_string(input, "", "Input file");
-
-static bool IsNonEmptyMessage(const char* flagname, const std::string& value) {
-  return !value.empty();
-}
-DEFINE_validator(input, &IsNonEmptyMessage);
+ABSL_FLAG(std::string, input, "", "Input file");
 
 namespace {
 
@@ -29,10 +26,15 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
 }  // namespace
 
 int main(int argc, char** argv) {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  absl::ParseCommandLine(argc, argv);
+
+  if (absl::GetFlag(FLAGS_input).empty()) {
+    std::cerr << "--input is required\n";
+    return -1;
+  }
 
   cv::Mat image;
-  if (readBwImage(FLAGS_input, image) < 0) {
+  if (readBwImage(absl::GetFlag(FLAGS_input), image) < 0) {
     std::cerr << "failed to read image\n";
     return -1;
   }
