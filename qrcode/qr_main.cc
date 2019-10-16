@@ -1,13 +1,17 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui/highgui.hpp"
 
+#include "qrcode/runner.h"
+
 ABSL_FLAG(std::string, input, "", "Input file");
+ABSL_FLAG(int, line, -1, "Process this line only");
 
 namespace {
 
@@ -24,12 +28,30 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
   return 0;
 }
 
-int processRow(absl::Span<uchar> row) {
-  int num = 0;
-  for (const auto p : row) {
-    num += p == 0;
+int processRow(absl::Span<const uchar> row) {
+  Runner runner(row);
+
+  for (;;) {
+    int startx;
+    auto result = runner.Next(7, &startx);
+    if (result == absl::nullopt) {
+      return 0;
+    }
+
+    const std::vector<int> lens = std::move(result.value());
+    int off = startx;
+    for (int i = 0; i < lens.size(); i++) {
+      std::cout << off << ":" << lens[i] << " ";
+    }
+    std::cout << "\n";
+
+    for (int i = 0; i < lens.size(); i++) {
+      std::cout << absl::StrFormat("%.2f ", lens[i] / (double) lens[0]);
+    }
+    std::cout << "\n";
   }
-  return num;
+
+  return 0;
 }
 
 }  // namespace
@@ -58,9 +80,15 @@ int main(int argc, char** argv) {
   }
 
   uchar* p = image.ptr<uchar>(0);
-  for (int row = 0; row < image.rows; ++row) {
-    int num = processRow(absl::Span<uchar>(p+row*image.cols, image.cols));
+  if (absl::GetFlag(FLAGS_line) >= 0) {
+    const int row = absl::GetFlag(FLAGS_line);
+    int num = processRow(absl::Span<const uchar>(p+row*image.cols, image.cols));
     std::cout << absl::StrFormat("row %d: %d\n", row, num);
+  } else {
+    for (int row = 0; row < image.rows; ++row) {
+      int num = processRow(absl::Span<const uchar>(p+row*image.cols, image.cols));
+      std::cout << absl::StrFormat("row %d: %d\n", row, num);
+    }
   }
 
   // constexpr char kWindowName[] = "Output";
