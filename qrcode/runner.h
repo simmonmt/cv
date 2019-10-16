@@ -1,6 +1,7 @@
 #ifndef _QRCODE_RUNNER_H_
 #define _QRCODE_RUNNER_H_ 1
 
+#include <map>
 #include <vector>
 
 #include "absl/types/optional.h"
@@ -16,7 +17,12 @@ class Runner {
   absl::optional<std::vector<int>> Next(const int num, int* idx);
 
  private:
+  int Get(int start);
+  int Count(int start);
+  void PurgeBefore(int start);
+
   absl::Span<const unsigned char> vals_;
+  std::map<int, int> cache_;
   int start_;
 };
 
