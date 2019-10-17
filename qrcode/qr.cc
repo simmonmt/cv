@@ -23,7 +23,7 @@ bool IsPositioningBlock(const std::vector<int>& lens) {
     }
   }
 
-  double big_high = small * 3 * 1.06, big_low = small * 3 * 0.94;
+  double big_high = small * 3 * 1.05, big_low = small * 3 * 0.95;
   if (c < big_low || c > big_high) {
     return false;
   }
