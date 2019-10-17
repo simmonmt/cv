@@ -2,6 +2,7 @@ cc_binary(
     name = "qrcode",
     srcs = ["qr_main.cc"],
     deps = [
+        ":qr",
         ":runner",
         "@opencv//:opencv",
         "@com_google_absl//absl/flags:flag",
@@ -28,6 +29,23 @@ cc_test(
     size = "small",
     deps = [
         ":runner",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "qr",
+    srcs = [ "qr.cc" ],
+    hdrs = [ "qr.h" ],
+)
+
+cc_test(
+    name = "qr_test",
+    srcs = [ "qr_test.cc" ],
+    size = "small",
+    deps = [
+        ":qr",
+        "@com_google_absl//absl/base",
         "@com_google_googletest//:gtest_main",
     ],
 )
