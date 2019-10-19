@@ -7,7 +7,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 
-// Runner finds ranges of consistent color values.
+// Runner finds ranges of consistent values.
 //
 // Given input 1,1,1,0,0,0,0,1,1, Runner is intended to return 3,4,2,
 // as the sequence contains a run of 3 1's, then 4 0's, then 2 1's. It
