@@ -15,9 +15,9 @@ bool IsPositioningBlock(const std::vector<int>& lens) {
 
   // NOTE: These thresholds were determined empirically
 
-  double small = (lb+lw+rw+rb)/4.0;
+  double small = (lb + lw + rw + rb) / 4.0;
   double small_high = small * 1.15, small_low = small * 0.85;
-  for (int n : {lb,lw,rw,rb}) {
+  for (int n : {lb, lw, rw, rb}) {
     if (n < small_low || n > small_high) {
       return false;
     }

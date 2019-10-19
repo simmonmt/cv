@@ -1,8 +1,6 @@
 #include "qrcode/runner.h"
 
-Runner::Runner(absl::Span<const unsigned char> vals)
-  : vals_(vals),
-    start_(0) {}
+Runner::Runner(absl::Span<const unsigned char> vals) : vals_(vals), start_(0) {}
 
 int Runner::Count(int start) {
   if (start >= vals_.size()) {
@@ -11,8 +9,7 @@ int Runner::Count(int start) {
 
   const unsigned char want = vals_[start];
   int len = 1;
-  for (int i = start + 1; i < vals_.size() && vals_[i] == want; i++)
-    ++len;
+  for (int i = start + 1; i < vals_.size() && vals_[i] == want; i++) ++len;
   return len;
 }
 

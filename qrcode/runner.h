@@ -37,4 +37,4 @@ class Runner {
   int start_;
 };
 
-#endif // _QRCODE_RUNNER_H_
+#endif  // _QRCODE_RUNNER_H_

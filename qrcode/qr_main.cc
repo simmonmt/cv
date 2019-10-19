@@ -4,10 +4,9 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
-#include "opencv2/opencv.hpp"
-#include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui/highgui.hpp"
-
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/opencv.hpp"
 #include "qrcode/qr.h"
 #include "qrcode/runner.h"
 
@@ -53,7 +52,7 @@ int processRow(absl::Span<const uchar> row) {
     if (IsPositioningBlock(lens)) {
       int off = startx;
       for (int i = 0; i < lens.size(); i++) {
-	std::cout << absl::StrFormat("S:%d,L:%d ", off, lens[i]);
+        std::cout << absl::StrFormat("S:%d,L:%d ", off, lens[i]);
       }
       std::cout << "\n";
       ret = 1;
@@ -84,23 +83,24 @@ int main(int argc, char** argv) {
 
   if (image.depth() != CV_8U || image.channels() != 1 ||
       !image.isContinuous()) {
-    std::cerr << absl::StrFormat("expected depth %d, got %d, chans 1, got %d, "
-				 "continuous, got %d\n",
-				 CV_8U, image.depth(), image.channels(),
-				 image.isContinuous());
+    std::cerr << absl::StrFormat(
+        "expected depth %d, got %d, chans 1, got %d, "
+        "continuous, got %d\n",
+        CV_8U, image.depth(), image.channels(), image.isContinuous());
     return -1;
   }
 
   uchar* p = image.ptr<uchar>(0);
   if (absl::GetFlag(FLAGS_line) >= 0) {
     const int row = absl::GetFlag(FLAGS_line);
-    if (processRow(absl::Span<const uchar>(p+row*image.cols, image.cols))) {
+    if (processRow(absl::Span<const uchar>(p + row * image.cols, image.cols))) {
       std::cout << absl::StrFormat("row %d\n", row);
     }
   } else {
     for (int row = 0; row < image.rows; ++row) {
-      if (processRow(absl::Span<const uchar>(p+row*image.cols, image.cols))) {
-	std::cout << absl::StrFormat("row %d\n", row);
+      if (processRow(
+              absl::Span<const uchar>(p + row * image.cols, image.cols))) {
+        std::cout << absl::StrFormat("row %d\n", row);
       }
     }
   }
