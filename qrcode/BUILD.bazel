@@ -49,3 +49,15 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "pixel_iterator",
+    hdrs = [ "pixel_iterator.h" ],
+    )
+
+cc_test(
+    name = "pixel_iterator_test",
+    size = "small",
+    srcs = [ "pixel_iterator_test.cc" ],
+    deps = [ ":pixel_iterator",
+             "@com_google_googletest//:gtest_main"])
