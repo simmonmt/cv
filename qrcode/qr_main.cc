@@ -29,8 +29,16 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
   return 0;
 }
 
-int processRow(absl::Span<const uchar> row) {
+struct Candidate {
+  Candidate(int start, int lb, int lw, int c, int rw, int rb)
+      : start(start), lb(lb), lw(lw), c(c), rw(rw), rb(rb) {}
+
+  int start, lb, lw, c, rw, rb;
+};
+
+std::vector<Candidate> processRow(absl::Span<const uchar> row) {
   Runner runner(row);
+  std::vector<Candidate> out;
 
   if (row[0] != 0) {
     // The row starts with white. We need it to start with black. Advance the
@@ -39,30 +47,21 @@ int processRow(absl::Span<const uchar> row) {
     runner.Next(1, &startx);
   }
 
-  int ret = 0;
-
   for (;;) {
     int startx;
     auto result = runner.Next(5, &startx);
     if (result == absl::nullopt) {
-      return 0;
+      return out;
     }
 
     const std::vector<int> lens = std::move(result.value());
     if (IsPositioningBlock(lens)) {
-      int off = startx;
-      for (int i = 0; i < lens.size(); i++) {
-        std::cout << absl::StrFormat("S:%d,L:%d ", off, lens[i]);
-      }
-      std::cout << "\n";
-      ret = 1;
+      out.emplace_back(startx, lens[0], lens[1], lens[2], lens[3], lens[4]);
     }
 
     // The next group starts with white, which is no good to us. Skip it.
     runner.Next(1, &startx);
   }
-
-  return ret;
 }
 
 }  // namespace
@@ -91,17 +90,33 @@ int main(int argc, char** argv) {
   }
 
   uchar* p = image.ptr<uchar>(0);
+  std::vector<std::pair<int, Candidate>> candidates;
   if (absl::GetFlag(FLAGS_line) >= 0) {
     const int row = absl::GetFlag(FLAGS_line);
-    if (processRow(absl::Span<const uchar>(p + row * image.cols, image.cols))) {
-      std::cout << absl::StrFormat("row %d\n", row);
+    std::vector<Candidate> row_candidates =
+        processRow(absl::Span<const uchar>(p + row * image.cols, image.cols));
+    for (const auto& candidate : row_candidates) {
+      candidates.emplace_back(row, candidate);
     }
+
   } else {
     for (int row = 0; row < image.rows; ++row) {
-      if (processRow(
-              absl::Span<const uchar>(p + row * image.cols, image.cols))) {
-        std::cout << absl::StrFormat("row %d\n", row);
+      std::vector<Candidate> row_candidates =
+          processRow(absl::Span<const uchar>(p + row * image.cols, image.cols));
+      for (const auto& candidate : row_candidates) {
+        candidates.emplace_back(row, candidate);
       }
+    }
+  }
+
+  for (const auto& item : candidates) {
+    const int row = item.first;
+    const Candidate& candidate = item.second;
+    const int tot_len =
+        candidate.lb + candidate.lw + candidate.c + candidate.rw + candidate.rb;
+
+    for (int i = 0; i < tot_len; ++i) {
+      p[row * image.cols + candidate.start + i] = 255;
     }
   }
 
