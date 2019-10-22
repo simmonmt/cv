@@ -89,12 +89,12 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  uchar* p = image.ptr<uchar>(0);
+  uchar* image_px = image.ptr<uchar>(0);
   std::vector<std::pair<int, Candidate>> candidates;
   if (absl::GetFlag(FLAGS_line) >= 0) {
     const int row = absl::GetFlag(FLAGS_line);
     std::vector<Candidate> row_candidates =
-        processRow(absl::Span<const uchar>(p + row * image.cols, image.cols));
+        processRow(absl::Span<const uchar>(image_px + row * image.cols, image.cols));
     for (const auto& candidate : row_candidates) {
       candidates.emplace_back(row, candidate);
     }
@@ -102,12 +102,16 @@ int main(int argc, char** argv) {
   } else {
     for (int row = 0; row < image.rows; ++row) {
       std::vector<Candidate> row_candidates =
-          processRow(absl::Span<const uchar>(p + row * image.cols, image.cols));
+          processRow(absl::Span<const uchar>(image_px + row * image.cols, image.cols));
       for (const auto& candidate : row_candidates) {
         candidates.emplace_back(row, candidate);
       }
     }
   }
+
+  cv::Mat annotated;
+  cv::cvtColor(image, annotated, cv::COLOR_GRAY2BGR);
+  uchar* annotated_px = annotated.ptr<uchar>(0);
 
   for (const auto& item : candidates) {
     const int row = item.first;
@@ -116,14 +120,19 @@ int main(int argc, char** argv) {
         candidate.lb + candidate.lw + candidate.c + candidate.rw + candidate.rb;
 
     for (int i = 0; i < tot_len; ++i) {
-      p[row * image.cols + candidate.start + i] = 255;
+      int px_idx = row * image.cols + candidate.start + i;
+      if (image_px[px_idx]) {
+        annotated_px[px_idx*3] = 127;
+      } else {
+        annotated_px[px_idx*3] = 255;
+      }
     }
   }
 
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, 1);
-    cv::imshow(kWindowName, image);
+    cv::imshow(kWindowName, annotated);
     cv::waitKey(0);
   }
 
