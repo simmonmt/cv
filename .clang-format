@@ -2,3 +2,5 @@ BasedOnStyle: Google
 
 DerivePointerAlignment: false
 PointerAlignment: Left
+
+IncludeBlocks: Preserve
