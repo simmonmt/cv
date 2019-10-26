@@ -7,6 +7,8 @@
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/opencv.hpp"
+
+#include "qrcode/debug_image.h"
 #include "qrcode/qr.h"
 #include "qrcode/runner.h"
 
@@ -79,6 +81,8 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  DebugImage debug_image = DebugImage::FromGray(image);
+
   if (image.depth() != CV_8U || image.channels() != 1 ||
       !image.isContinuous()) {
     std::cerr << absl::StrFormat(
@@ -106,32 +110,19 @@ int main(int argc, char** argv) {
 
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
-  cv::Mat annotated;
-  cv::cvtColor(image, annotated, cv::COLOR_GRAY2BGR);
-  uchar* image_px = image.ptr<uchar>(0);
-  uchar* annotated_px = annotated.ptr<uchar>(0);
-
   for (const auto& item : candidates) {
     const int row = item.first;
     const Candidate& candidate = item.second;
     const int tot_len =
         candidate.lb + candidate.lw + candidate.c + candidate.rw + candidate.rb;
-
-    for (int i = 0; i < tot_len; ++i) {
-      int px_idx = row * image.cols + candidate.start + i;
-      if (image_px[px_idx]) {
-        annotated_px[px_idx * 3] = 127;
-      } else {
-        annotated_px[px_idx * 3] = 255;
-      }
-    }
+    debug_image.HighlightRow(row, candidate.start, candidate.start + tot_len);
   }
 
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
-    cv::namedWindow(kWindowName, 1);
-    cv::imshow(kWindowName, annotated);
-    cv::waitKey(0);
+    cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
+    cv::imshow(kWindowName, debug_image.Mat());
+    cv::waitKey(5000);
   }
 
   return 0;

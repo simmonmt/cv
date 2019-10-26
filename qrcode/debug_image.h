@@ -5,17 +5,20 @@
 
 class DebugImage {
  public:
-  DebugImage(cv::Mat image);
+  DebugImage(cv::Mat mat);
   virtual ~DebugImage() = default;
 
-  DebugImage(const DebugImage&) = delete;
+  static DebugImage FromGray(cv::Mat gray);
 
-  void HighlightLine(cv::Point2i from, cv::Point2i to);
+  void HighlightRow(int row, int from, int to);
+  void HighlightCol(int col, int from, int to);
 
-  cv::Mat Image();
+  cv::Mat Mat();
 
  private:
-  cv::Mat image_;
+  DebugImage(const DebugImage&) = default;
+
+  cv::Mat mat_;
 };
 
 #endif  // _QRCODE_DEBUG_IMAGE_H_
