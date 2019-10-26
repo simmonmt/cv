@@ -35,11 +35,11 @@ struct Candidate {
   int start, lb, lw, c, rw, rb;
 };
 
-std::vector<Candidate> processRow(absl::Span<const uchar> row) {
-  Runner runner(row);
+std::vector<Candidate> processRow(DirectionalIterator<const uchar> iter) {
+  Runner runner(iter);
   std::vector<Candidate> out;
 
-  if (row[0] != 0) {
+  if (iter.Get() != 0) {
     // The row starts with white. We need it to start with black. Advance the
     // pointer.
     int startx;
@@ -88,18 +88,27 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  uchar* image_px = image.ptr<uchar>(0);
+  PixelIterator<const uchar> image_iter(image.ptr<uchar>(0), image.cols,
+                                        image.rows);
   std::vector<std::pair<int, Candidate>> candidates;
   for (int row = 0; row < image.rows; ++row) {
-    std::vector<Candidate> row_candidates = processRow(
-        absl::Span<const uchar>(image_px + row * image.cols, image.cols));
-    for (const auto& candidate : row_candidates) {
-      candidates.emplace_back(row, candidate);
+    image_iter.SeekRowCol(row, 0);
+    std::vector<Candidate> row_candidates =
+        processRow(image_iter.MakeForwardColumnIterator());
+    if (!row_candidates.empty()) {
+      std::cout << "row " << row << ": #candidates " << row_candidates.size()
+                << "\n";
+      for (const auto& candidate : row_candidates) {
+        candidates.emplace_back(row, candidate);
+      }
     }
   }
 
+  std::cout << "#candidates found: " << candidates.size() << "\n";
+
   cv::Mat annotated;
   cv::cvtColor(image, annotated, cv::COLOR_GRAY2BGR);
+  uchar* image_px = image.ptr<uchar>(0);
   uchar* annotated_px = annotated.ptr<uchar>(0);
 
   for (const auto& item : candidates) {
