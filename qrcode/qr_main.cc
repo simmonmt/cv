@@ -20,6 +20,12 @@ ABSL_FLAG(int, row, -1, "Use this row only for the first scan");
 
 namespace {
 
+// When clustering positioning block center points, we want to keep the clusters
+// tight. The clusterer will pick an initial point, and won't let any other
+// points in the cluster be more than this far (Manhattan distance) from that
+// initial point.
+constexpr int kPositioningBlockClusteringThreshold = 10;
+
 int readBwImage(const std::string& path, cv::OutputArray out) {
   cv::Mat input = cv::imread(path, cv::IMREAD_COLOR);
   if (!input.data) {
@@ -171,8 +177,18 @@ int main(int argc, char** argv) {
 
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
-  for (const Point& candidate : candidates) {
-    debug_image->Crosshairs(candidate);
+  absl::optional<std::vector<Point>> maybe_clusters =
+      ClusterPoints(candidates, kPositioningBlockClusteringThreshold, 3);
+  if (!maybe_clusters.has_value()) {
+    std::cerr << "clustering failed: didn't find 3 positioning blocks\n";
+    return -1;
+  }
+
+  const std::vector<Point> clusters = std::move(maybe_clusters.value());
+  std::cout << "#clustered candidates found: " << clusters.size() << "\n";
+
+  for (const Point& point : clusters) {
+    debug_image->Crosshairs(point);
   }
 
   if (absl::GetFlag(FLAGS_display)) {
