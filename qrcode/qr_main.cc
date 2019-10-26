@@ -32,28 +32,27 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
   return 0;
 }
 
+// Describes two lines that intersect in the center black area of a
+// positioning box.
 struct Candidate {
-  Candidate(int start, int lb, int lw, int c, int rw, int rb)
-      : start(start), lb(lb), lw(lw), c(c), rw(rw), rb(rb) {}
+  int h_start_x, h_start_y;
+  int lbw;
+  int lww;
+  int cw;
+  int rww;
+  int rbw;
 
-  int start, lb, lw, c, rw, rb;
+  int v_start_x, v_start_y;
+  int tbh;
+  int twh;
+  int ch;
+  int bwh;
+  int bbh;
+
+  int cross_x, cross_y;
+
+  int center_x, center_y;
 };
-
-std::ostream& operator<<(std::ostream& stream, const Candidate& cand) {
-  return stream << absl::StrFormat("cand<%d:%d %d %d %d %d>", cand.start,
-                                   cand.lb, cand.lw, cand.c, cand.rw, cand.rb);
-}
-
-template <class T>
-std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec) {
-  for (int i = 0; i < vec.size(); ++i) {
-    if (i != 0) {
-      stream << " ";
-    }
-    stream << absl::StrCat(vec[i]);
-  }
-  return stream;
-}
 
 std::vector<std::pair<int, Candidate>> processRow(
     DebugImage* debug_image, PixelIterator<const uchar>* image_iter, int row) {
@@ -80,13 +79,17 @@ std::vector<std::pair<int, Candidate>> processRow(
 
     const std::vector<int> lens = std::move(result.value());
     if (IsPositioningBlock(lens)) {
-      Candidate cand(startx, lens[0], lens[1], lens[2], lens[3], lens[4]);
+      Candidate cand;
+      cand.h_start_x = startx;
+      cand.h_start_y = row;
+      cand.lbw = lens[0];
+      cand.lww = lens[1];
+      cand.cw = lens[2];
+      cand.rww = lens[3];
+      cand.rbw = lens[4];
 
-      std::cout << cand << "\n";
-
-      int centerx = startx + cand.lb + cand.lw + cand.c / 2;
-
-      std::cout << "looking at col " << centerx << " row " << row << "\n";
+      int centerx = startx + cand.lbw + cand.lww + cand.cw / 2;
+      cand.center_x = centerx;
 
       image_iter->SeekRowCol(row, centerx);
 
@@ -105,20 +108,6 @@ std::vector<std::pair<int, Candidate>> processRow(
         const std::vector<int> three_up = std::move(maybe_three_up.value());
         const std::vector<int> three_down = std::move(maybe_three_down.value());
 
-        // int tot_up = three_up[0] + three_up[1] + three_up[2];
-
-        // debug_image->HighlightCol(centerx, row - tot_up, row);
-
-        // debug_image->HighlightRow(row, centerx - 50, centerx + 50);
-        // debug_image->HighlightRow(row - three_up[0], centerx - 50,
-        //                           centerx + 50);
-        // debug_image->HighlightRow(row - three_up[0] - three_up[1], centerx -
-        // 50,
-        //                           centerx + 50);
-        // debug_image->HighlightRow(row - three_up[0] - three_up[1] -
-        // three_up[2],
-        //                           centerx - 50, centerx + 50);
-
         std::vector<int> combined = {
             three_up[2],                  //
             three_up[1],                  //
@@ -127,11 +116,22 @@ std::vector<std::pair<int, Candidate>> processRow(
             three_down[2],
         };
 
-        // std::cout << "three_up " << three_up << "\n";
-        // std::cout << "three_down " << three_down << "\n";
-        // std::cout << "combined " << combined << "\n";
-
         if (IsPositioningBlock(combined)) {
+          int tot_up = three_up[0] + three_up[1] + three_up[2];
+
+          cand.v_start_x = centerx;
+          cand.v_start_y = row - tot_up;
+          cand.tbh = combined[0];
+          cand.twh = combined[1];
+          cand.ch = combined[2];
+          cand.bwh = combined[3];
+          cand.bbh = combined[4];
+
+          cand.cross_x = centerx;
+          cand.cross_y = row;
+
+          cand.center_y = cand.v_start_y + cand.tbh + cand.twh + cand.ch / 2;
+
           out.emplace_back(std::make_pair(row, cand));
         }
       }
@@ -185,11 +185,8 @@ int main(int argc, char** argv) {
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
   for (const auto& item : candidates) {
-    const int row = item.first;
     const Candidate& candidate = item.second;
-    const int tot_len =
-        candidate.lb + candidate.lw + candidate.c + candidate.rw + candidate.rb;
-    debug_image->HighlightRow(row, candidate.start, candidate.start + tot_len);
+    debug_image->Crosshairs(candidate.center_y, candidate.center_x);
   }
 
   if (absl::GetFlag(FLAGS_display)) {
