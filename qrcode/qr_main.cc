@@ -93,16 +93,16 @@ int main(int argc, char** argv) {
   std::vector<std::pair<int, Candidate>> candidates;
   if (absl::GetFlag(FLAGS_line) >= 0) {
     const int row = absl::GetFlag(FLAGS_line);
-    std::vector<Candidate> row_candidates =
-        processRow(absl::Span<const uchar>(image_px + row * image.cols, image.cols));
+    std::vector<Candidate> row_candidates = processRow(
+        absl::Span<const uchar>(image_px + row * image.cols, image.cols));
     for (const auto& candidate : row_candidates) {
       candidates.emplace_back(row, candidate);
     }
 
   } else {
     for (int row = 0; row < image.rows; ++row) {
-      std::vector<Candidate> row_candidates =
-          processRow(absl::Span<const uchar>(image_px + row * image.cols, image.cols));
+      std::vector<Candidate> row_candidates = processRow(
+          absl::Span<const uchar>(image_px + row * image.cols, image.cols));
       for (const auto& candidate : row_candidates) {
         candidates.emplace_back(row, candidate);
       }
@@ -122,9 +122,9 @@ int main(int argc, char** argv) {
     for (int i = 0; i < tot_len; ++i) {
       int px_idx = row * image.cols + candidate.start + i;
       if (image_px[px_idx]) {
-        annotated_px[px_idx*3] = 127;
+        annotated_px[px_idx * 3] = 127;
       } else {
-        annotated_px[px_idx*3] = 255;
+        annotated_px[px_idx * 3] = 255;
       }
     }
   }
