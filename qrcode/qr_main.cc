@@ -15,6 +15,7 @@
 
 ABSL_FLAG(std::string, input, "", "Input file");
 ABSL_FLAG(bool, display, false, "Display the B&W image");
+ABSL_FLAG(int, row, -1, "Use this row only for the first scan");
 
 namespace {
 
@@ -38,13 +39,34 @@ struct Candidate {
   int start, lb, lw, c, rw, rb;
 };
 
-std::vector<Candidate> processRow(DirectionalIterator<const uchar> iter) {
-  Runner runner(iter);
-  std::vector<Candidate> out;
+std::ostream& operator<<(std::ostream& stream, const Candidate& cand) {
+  return stream << absl::StrFormat("cand<%d:%d %d %d %d %d>", cand.start,
+                                   cand.lb, cand.lw, cand.c, cand.rw, cand.rb);
+}
 
-  if (iter.Get() != 0) {
-    // The row starts with white. We need it to start with black. Advance the
-    // pointer.
+template <class T>
+std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec) {
+  for (int i = 0; i < vec.size(); ++i) {
+    if (i != 0) {
+      stream << " ";
+    }
+    stream << absl::StrCat(vec[i]);
+  }
+  return stream;
+}
+
+std::vector<std::pair<int, Candidate>> processRow(
+    PixelIterator<const uchar>* image_iter, int row) {
+  image_iter->SeekRowCol(row, 0);
+
+  // If the row starts with white we need to skip the first set of
+  // values returned by the runner.
+  bool skip_first = image_iter->Get() != 0;
+
+  Runner runner(image_iter->MakeForwardColumnIterator());
+  std::vector<std::pair<int, Candidate>> out;
+
+  if (skip_first) {
     int startx;
     runner.Next(1, &startx);
   }
@@ -58,7 +80,44 @@ std::vector<Candidate> processRow(DirectionalIterator<const uchar> iter) {
 
     const std::vector<int> lens = std::move(result.value());
     if (IsPositioningBlock(lens)) {
-      out.emplace_back(startx, lens[0], lens[1], lens[2], lens[3], lens[4]);
+      Candidate cand(startx, lens[0], lens[1], lens[2], lens[3], lens[4]);
+
+      std::cout << cand << "\n";
+
+      int centerx = startx + cand.lb + cand.lw + cand.c / 2;
+
+      std::cout << "looking at col " << centerx << " row " << row << "\n";
+
+      image_iter->SeekRowCol(row, centerx);
+
+      auto get_three = [&](DirectionalIterator<const uchar> iter) {
+        Runner r(iter);
+        int startx;
+        return runner.Next(3, &startx);
+      };
+
+      absl::optional<std::vector<int>> three_up =
+          get_three(image_iter->MakeReverseRowIterator());
+      absl::optional<std::vector<int>> three_down =
+          get_three(image_iter->MakeForwardRowIterator());
+
+      if (three_up.has_value() && three_down.has_value()) {
+        std::vector<int> combined = {
+            (*three_up)[2],                     //
+            (*three_up)[1],                     //
+            (*three_up)[0] + (*three_down)[0],  //
+            (*three_down)[1],                   //
+            (*three_down)[2],
+        };
+
+        std::cout << "three_up " << *three_up << "\n";
+        std::cout << "three_down " << *three_down << "\n";
+        std::cout << "combined " << combined << "\n";
+
+        //   if (IsPositioningBlock(combined)) {
+        out.emplace_back(std::make_pair(row, cand));
+        // }
+      }
     }
 
     // The next group starts with white, which is no good to us. Skip it.
@@ -97,16 +156,13 @@ int main(int argc, char** argv) {
                                         image.rows);
   std::vector<std::pair<int, Candidate>> candidates;
   for (int row = 0; row < image.rows; ++row) {
-    image_iter.SeekRowCol(row, 0);
-    std::vector<Candidate> row_candidates =
-        processRow(image_iter.MakeForwardColumnIterator());
-    if (!row_candidates.empty()) {
-      std::cout << "row " << row << ": #candidates " << row_candidates.size()
-                << "\n";
-      for (const auto& candidate : row_candidates) {
-        candidates.emplace_back(row, candidate);
-      }
+    if (absl::GetFlag(FLAGS_row) != -1 && absl::GetFlag(FLAGS_row) != row) {
+      continue;
     }
+
+    auto row_candidates = processRow(&image_iter, row);
+    candidates.insert(candidates.end(), row_candidates.begin(),
+                      row_candidates.end());
   }
 
   std::cout << "#candidates found: " << candidates.size() << "\n";
