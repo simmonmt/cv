@@ -10,6 +10,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "qrcode/debug_image.h"
+#include "qrcode/point.h"
 #include "qrcode/qr.h"
 #include "qrcode/runner.h"
 
@@ -31,13 +32,6 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
 
   return 0;
 }
-
-struct Point {
-  Point(int x, int y) : x(x), y(y) {}
-
-  int x;
-  int y;
-};
 
 std::vector<Point> processRow(DebugImage* debug_image,
                               PixelIterator<const uchar>* image_iter, int row) {

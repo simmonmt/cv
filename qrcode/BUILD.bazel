@@ -3,6 +3,7 @@ cc_binary(
     srcs = ["qr_main.cc"],
     deps = [
         ":debug_image",
+        ":point",
         ":qr",
         ":runner",
         "@opencv//:opencv",
@@ -71,3 +72,9 @@ cc_library(
     srcs = [ "debug_image.cc" ],
     deps = ["@opencv//:opencv",
             "@com_google_absl//absl/memory",])
+
+cc_library(
+    name = "point",
+    srcs = ["point.cc" ],
+    hdrs = ["point.h" ],
+    deps = [ "@com_google_absl//absl/strings" ])
