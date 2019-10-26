@@ -6,6 +6,7 @@
 
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "qrcode/pixel_iterator.h"
 
 // Runner finds ranges of consistent values.
 //
@@ -16,7 +17,7 @@
 class Runner {
  public:
   // Does not assume ownership of the data pointed to by the span.
-  Runner(absl::Span<const unsigned char> vals);
+  Runner(DirectionalIterator<const unsigned char> vals);
   ~Runner() = default;
 
   Runner(const Runner&) = delete;
@@ -29,12 +30,14 @@ class Runner {
 
  private:
   int Get(int start);
-  int Count(int start);
+  int CountNext();
   void PurgeBefore(int start);
 
-  absl::Span<const unsigned char> vals_;
-  std::map<int, int> cache_;
+  DirectionalIterator<const unsigned char> iter_;
+  int iter_pos_;
+  bool iter_empty_;
   int start_;
+  std::map<int, int> cache_;
 };
 
 #endif  // _QRCODE_RUNNER_H_

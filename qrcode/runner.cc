@@ -1,22 +1,45 @@
 #include "qrcode/runner.h"
 
-Runner::Runner(absl::Span<const unsigned char> vals) : vals_(vals), start_(0) {}
+#include <assert.h>
+#include <iostream>
 
-int Runner::Count(int start) {
-  if (start >= vals_.size()) {
-    return 0;
+Runner::Runner(DirectionalIterator<const unsigned char> iter)
+    : iter_(iter), iter_pos_(0), iter_empty_(false), start_(0) {}
+
+int Runner::CountNext() {
+  auto try_next = [&]() {
+                    bool ret = iter_.Next();
+                    if (!ret) {
+                      iter_empty_ = true;
+                    } else {
+                      ++iter_pos_;
+                    }
+                    return ret;
+                  };
+
+  int len;
+  const unsigned char want = iter_.Get();
+  for (len = 1; try_next(); ++len) {
+    if (iter_.Get() != want) {
+      break;
+    }
   }
 
-  const unsigned char want = vals_[start];
-  int len = 1;
-  for (int i = start + 1; i < vals_.size() && vals_[i] == want; i++) ++len;
   return len;
 }
 
 int Runner::Get(int start) {
+  if (iter_empty_) {
+    return 0;
+  }
+
   auto iter = cache_.find(start);
   if (iter == cache_.end()) {
-    auto res = cache_.insert(std::make_pair(start, Count(start)));
+    // There's no entry for start in the cache, so we need to count the next run
+    // of values.  Make sure the next run starts where we think it does. If
+    // we're mistaken, we'd return an incorrect starting position.
+    assert(start == iter_pos_);
+    auto res = cache_.insert(std::make_pair(start, CountNext()));
     iter = res.first;
   }
   return iter->second;

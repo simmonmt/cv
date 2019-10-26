@@ -11,6 +11,12 @@ using ::testing::Eq;
 using ::testing::Optional;
 
 std::vector<unsigned char> MakeRun(std::vector<int> lens) {
+  // std::vector<unsigned char> out;
+  // for (int i = 0; i < 10; ++i) {
+  //   out.push_back(i);
+  // }
+  // return out;
+
   std::vector<unsigned char> out;
   for (int i = 0; i < lens.size(); ++i) {
     const int len = lens[i];
@@ -30,7 +36,8 @@ class RunnerTest : public ::testing::Test {};
 TEST_F(RunnerTest, Test) {
   const std::vector<unsigned char> run =
       MakeRun({1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
-  Runner runner(absl::Span<const unsigned char>(run.data(), run.size()));
+  PixelIterator<const unsigned char> iter(run.data(), run.size(), 1);
+  Runner runner(iter.MakeForwardColumnIterator());
 
   int idx;
   absl::optional<std::vector<int>> result;
