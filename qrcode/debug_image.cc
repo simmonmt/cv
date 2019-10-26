@@ -30,4 +30,14 @@ void DebugImage::HighlightCol(int col, int from, int to) {
   }
 }
 
+void DebugImage::Crosshairs(int row, int col) {
+  int min_row = std::max(row - 50, 0);
+  int max_row = std::min(row + 50, mat_.rows - 1);
+  int min_col = std::max(col - 50, 0);
+  int max_col = std::min(col + 50, mat_.cols - 1);
+
+  HighlightRow(row, min_col, max_col);
+  HighlightCol(col, min_row, max_row);
+}
+
 cv::Mat DebugImage::Mat() { return mat_; }

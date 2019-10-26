@@ -13,6 +13,8 @@ class DebugImage {
   void HighlightRow(int row, int from, int to);
   void HighlightCol(int col, int from, int to);
 
+  void Crosshairs(int row, int col);
+
   cv::Mat Mat();
 
  private:
