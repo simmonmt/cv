@@ -26,6 +26,8 @@ class Runner {
   // many runs left. Assuming runs are returned, *idx will contain the index
   // relative to the start of vals (the ctor argument) that corresponds to the
   // beginning of the first run.
+  //
+  // If idx is nullptr, no index will be returned.
   absl::optional<std::vector<int>> Next(const int num, int* idx);
 
  private:

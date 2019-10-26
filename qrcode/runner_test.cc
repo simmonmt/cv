@@ -56,6 +56,13 @@ TEST_F(RunnerTest, Test) {
 
   result = runner.Next(8, &idx);
   ASSERT_THAT(result, Eq(absl::nullopt));
+
+  // Reset the runner
+  runner = Runner(iter.MakeForwardColumnIterator());
+
+  // Make sure we can call it without an index pointer.
+  result = runner.Next(7, nullptr);
+  ASSERT_THAT(result, Optional(ElementsAre(1, 2, 3, 4, 5, 6, 7)));
 }
 
 }  // namespace

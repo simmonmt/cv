@@ -58,7 +58,9 @@ absl::optional<std::vector<int>> Runner::Next(const int num, int* idx) {
 
   std::vector<int> lens(num);
   lens[0] = Get(start_);
-  *idx = start_;
+  if (idx != nullptr) {
+    *idx = start_;
+  }
 
   int next = start_ + lens[0];
   for (int i = 1; i < lens.size(); i++) {
