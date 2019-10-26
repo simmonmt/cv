@@ -70,7 +70,8 @@ cc_library(
     name = "debug_image",
     hdrs = [ "debug_image.h" ],
     srcs = [ "debug_image.cc" ],
-    deps = ["@opencv//:opencv",
+    deps = [":point",
+            "@opencv//:opencv",
             "@com_google_absl//absl/memory",])
 
 cc_library(

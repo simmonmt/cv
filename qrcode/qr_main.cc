@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
   for (const Point& candidate : candidates) {
-    debug_image->Crosshairs(candidate.y, candidate.x);
+    debug_image->Crosshairs(candidate);
   }
 
   if (absl::GetFlag(FLAGS_display)) {

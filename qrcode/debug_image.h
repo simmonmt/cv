@@ -3,6 +3,8 @@
 
 #include "opencv2/opencv.hpp"
 
+#include "qrcode/point.h"
+
 class DebugImage {
  public:
   DebugImage(cv::Mat mat);
@@ -13,7 +15,7 @@ class DebugImage {
   void HighlightRow(int row, int from, int to);
   void HighlightCol(int col, int from, int to);
 
-  void Crosshairs(int row, int col);
+  void Crosshairs(const Point& point);
 
   cv::Mat Mat();
 
