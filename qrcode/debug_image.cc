@@ -13,6 +13,12 @@ std::unique_ptr<DebugImage> DebugImage::FromGray(cv::Mat gray) {
 }
 
 void DebugImage::HighlightRow(int row, int from, int to) {
+  if (row < 0 || row >= mat_.rows) {
+    std::cerr << "request to highlight invalid row " << row << " valid [0,"
+              << mat_.rows - 1 << "]\n";
+    return;
+  }
+
   for (int col = from; col <= to; ++col) {
     uchar* p = mat_.ptr<uchar>(row, col);
     p[0] = 0;
@@ -22,6 +28,12 @@ void DebugImage::HighlightRow(int row, int from, int to) {
 }
 
 void DebugImage::HighlightCol(int col, int from, int to) {
+  if (col < 0 || col >= mat_.cols) {
+    std::cerr << "request to highlight invalid col " << col << " valid [0,"
+              << mat_.cols - 1 << "]\n";
+    return;
+  }
+
   for (int row = from; row <= to; ++row) {
     uchar* p = mat_.ptr<uchar>(row, col);
     p[0] = 0;
