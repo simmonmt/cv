@@ -54,8 +54,9 @@ struct Candidate {
   int center_x, center_y;
 };
 
-std::vector<std::pair<int, Candidate>> processRow(
-    DebugImage* debug_image, PixelIterator<const uchar>* image_iter, int row) {
+std::vector<Candidate> processRow(DebugImage* debug_image,
+                                  PixelIterator<const uchar>* image_iter,
+                                  int row) {
   image_iter->SeekRowCol(row, 0);
 
   // If the row starts with white we need to skip the first set of
@@ -63,7 +64,7 @@ std::vector<std::pair<int, Candidate>> processRow(
   bool skip_first = image_iter->Get() != 0;
 
   Runner runner(image_iter->MakeForwardColumnIterator());
-  std::vector<std::pair<int, Candidate>> out;
+  std::vector<Candidate> out;
 
   if (skip_first) {
     int startx;
@@ -132,7 +133,7 @@ std::vector<std::pair<int, Candidate>> processRow(
 
           cand.center_y = cand.v_start_y + cand.tbh + cand.twh + cand.ch / 2;
 
-          out.emplace_back(std::make_pair(row, cand));
+          out.emplace_back(cand);
         }
       }
     }
@@ -171,7 +172,7 @@ int main(int argc, char** argv) {
 
   PixelIterator<const uchar> image_iter(image.ptr<uchar>(0), image.cols,
                                         image.rows);
-  std::vector<std::pair<int, Candidate>> candidates;
+  std::vector<Candidate> candidates;
   for (int row = 0; row < image.rows; ++row) {
     if (absl::GetFlag(FLAGS_row) != -1 && absl::GetFlag(FLAGS_row) != row) {
       continue;
@@ -184,8 +185,7 @@ int main(int argc, char** argv) {
 
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
-  for (const auto& item : candidates) {
-    const Candidate& candidate = item.second;
+  for (const Candidate& candidate : candidates) {
     debug_image->Crosshairs(candidate.center_y, candidate.center_x);
   }
 
