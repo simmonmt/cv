@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& stream, const std::vector<T>& vec) {
 }
 
 std::vector<std::pair<int, Candidate>> processRow(
-    PixelIterator<const uchar>* image_iter, int row) {
+    DebugImage* debug_image, PixelIterator<const uchar>* image_iter, int row) {
   image_iter->SeekRowCol(row, 0);
 
   // If the row starts with white we need to skip the first set of
@@ -90,33 +90,50 @@ std::vector<std::pair<int, Candidate>> processRow(
 
       image_iter->SeekRowCol(row, centerx);
 
-      auto get_three = [&](DirectionalIterator<const uchar> iter) {
+      auto get_three = [](DirectionalIterator<const uchar> iter) {
         Runner r(iter);
         int startx;
-        return runner.Next(3, &startx);
+        return r.Next(3, &startx);
       };
 
-      absl::optional<std::vector<int>> three_up =
+      absl::optional<std::vector<int>> maybe_three_up =
           get_three(image_iter->MakeReverseRowIterator());
-      absl::optional<std::vector<int>> three_down =
+      absl::optional<std::vector<int>> maybe_three_down =
           get_three(image_iter->MakeForwardRowIterator());
 
-      if (three_up.has_value() && three_down.has_value()) {
+      if (maybe_three_up.has_value() && maybe_three_down.has_value()) {
+        const std::vector<int> three_up = std::move(maybe_three_up.value());
+        const std::vector<int> three_down = std::move(maybe_three_down.value());
+
+        // int tot_up = three_up[0] + three_up[1] + three_up[2];
+
+        // debug_image->HighlightCol(centerx, row - tot_up, row);
+
+        // debug_image->HighlightRow(row, centerx - 50, centerx + 50);
+        // debug_image->HighlightRow(row - three_up[0], centerx - 50,
+        //                           centerx + 50);
+        // debug_image->HighlightRow(row - three_up[0] - three_up[1], centerx -
+        // 50,
+        //                           centerx + 50);
+        // debug_image->HighlightRow(row - three_up[0] - three_up[1] -
+        // three_up[2],
+        //                           centerx - 50, centerx + 50);
+
         std::vector<int> combined = {
-            (*three_up)[2],                     //
-            (*three_up)[1],                     //
-            (*three_up)[0] + (*three_down)[0],  //
-            (*three_down)[1],                   //
-            (*three_down)[2],
+            three_up[2],                  //
+            three_up[1],                  //
+            three_up[0] + three_down[0],  //
+            three_down[1],                //
+            three_down[2],
         };
 
-        std::cout << "three_up " << *three_up << "\n";
-        std::cout << "three_down " << *three_down << "\n";
-        std::cout << "combined " << combined << "\n";
+        // std::cout << "three_up " << three_up << "\n";
+        // std::cout << "three_down " << three_down << "\n";
+        // std::cout << "combined " << combined << "\n";
 
-        //   if (IsPositioningBlock(combined)) {
-        out.emplace_back(std::make_pair(row, cand));
-        // }
+        if (IsPositioningBlock(combined)) {
+          out.emplace_back(std::make_pair(row, cand));
+        }
       }
     }
 
@@ -160,7 +177,7 @@ int main(int argc, char** argv) {
       continue;
     }
 
-    auto row_candidates = processRow(&image_iter, row);
+    auto row_candidates = processRow(debug_image.get(), &image_iter, row);
     candidates.insert(candidates.end(), row_candidates.begin(),
                       row_candidates.end());
   }
@@ -179,7 +196,7 @@ int main(int argc, char** argv) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
     cv::imshow(kWindowName, debug_image->Mat());
-    cv::waitKey(5000);
+    cv::waitKey(15000);
   }
 
   return 0;
