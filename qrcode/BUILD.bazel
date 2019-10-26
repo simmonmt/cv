@@ -2,6 +2,7 @@ cc_binary(
     name = "qrcode",
     srcs = ["qr_main.cc"],
     deps = [
+        ":debug_image",
         ":qr",
         ":runner",
         "@opencv//:opencv",
@@ -62,3 +63,9 @@ cc_test(
     srcs = [ "pixel_iterator_test.cc" ],
     deps = [ ":pixel_iterator",
              "@com_google_googletest//:gtest_main"])
+
+cc_library(
+    name = "debug_image",
+    hdrs = [ "debug_image.h" ],
+    srcs = [ "debug_image.cc" ],
+    deps = ["@opencv//:opencv"])
