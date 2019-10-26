@@ -1,11 +1,15 @@
 #include "qrcode/debug_image.h"
 
+#include <memory>
+
+#include "absl/memory/memory.h"
+
 DebugImage::DebugImage(cv::Mat mat) : mat_(mat) {}
 
-DebugImage DebugImage::FromGray(cv::Mat gray) {
+std::unique_ptr<DebugImage> DebugImage::FromGray(cv::Mat gray) {
   cv::Mat color;
   cv::cvtColor(gray, color, cv::COLOR_GRAY2BGR);
-  return DebugImage(color);
+  return absl::make_unique<DebugImage>(color);
 }
 
 void DebugImage::HighlightRow(int row, int from, int to) {

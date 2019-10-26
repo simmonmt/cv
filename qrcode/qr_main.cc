@@ -1,5 +1,6 @@
 #include "absl/flags/flag.h"
 #include "absl/flags/parse.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  DebugImage debug_image = DebugImage::FromGray(image);
+  std::unique_ptr<DebugImage> debug_image = DebugImage::FromGray(image);
 
   if (image.depth() != CV_8U || image.channels() != 1 ||
       !image.isContinuous()) {
@@ -115,13 +116,13 @@ int main(int argc, char** argv) {
     const Candidate& candidate = item.second;
     const int tot_len =
         candidate.lb + candidate.lw + candidate.c + candidate.rw + candidate.rb;
-    debug_image.HighlightRow(row, candidate.start, candidate.start + tot_len);
+    debug_image->HighlightRow(row, candidate.start, candidate.start + tot_len);
   }
 
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
-    cv::imshow(kWindowName, debug_image.Mat());
+    cv::imshow(kWindowName, debug_image->Mat());
     cv::waitKey(5000);
   }
 

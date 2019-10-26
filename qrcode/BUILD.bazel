@@ -8,6 +8,7 @@ cc_binary(
         "@opencv//:opencv",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:span",
@@ -68,4 +69,5 @@ cc_library(
     name = "debug_image",
     hdrs = [ "debug_image.h" ],
     srcs = [ "debug_image.cc" ],
-    deps = ["@opencv//:opencv"])
+    deps = ["@opencv//:opencv",
+            "@com_google_absl//absl/memory",])

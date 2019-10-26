@@ -8,7 +8,7 @@ class DebugImage {
   DebugImage(cv::Mat mat);
   virtual ~DebugImage() = default;
 
-  static DebugImage FromGray(cv::Mat gray);
+  static std::unique_ptr<DebugImage> FromGray(cv::Mat gray);
 
   void HighlightRow(int row, int from, int to);
   void HighlightCol(int col, int from, int to);
