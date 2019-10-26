@@ -1,24 +1,19 @@
 #ifndef _QRCODE_PIXEL_ITERATOR_
 #define _QRCODE_PIXEL_ITERATOR_ 1
 
-template <class T> class PixelIterator;
+template <class T>
+class PixelIterator;
 
 template <class T>
 class DirectionalIterator {
  public:
   DirectionalIterator(PixelIterator<T> iter, int row_delta, int col_delta)
-      : iter_(iter),
-        row_delta_(row_delta),
-        col_delta_(col_delta) {}
+      : iter_(iter), row_delta_(row_delta), col_delta_(col_delta) {}
   virtual ~DirectionalIterator() = default;
 
-  bool Next() {
-    return iter_.RelSeekRowCol(row_delta_, col_delta_);
-  }
+  bool Next() { return iter_.RelSeekRowCol(row_delta_, col_delta_); }
 
-  T Get() {
-    return iter_.Get();
-  }
+  T Get() { return iter_.Get(); }
 
  private:
   PixelIterator<T> iter_;
@@ -58,10 +53,18 @@ class PixelIterator {
 
   T Get() { return data_[cur_]; }
 
-  DirectionalIterator<T> MakeForwardRowIterator() { return DirectionalIterator<T>(*this, 1, 0); }
-  DirectionalIterator<T> MakeReverseRowIterator() { return DirectionalIterator<T>(*this, -1, 0); }
-  DirectionalIterator<T> MakeForwardColumnIterator() { return DirectionalIterator<T>(*this, 0, 1); }
-  DirectionalIterator<T> MakeReverseColumnIterator() { return DirectionalIterator<T>(*this, 0, -1); }
+  DirectionalIterator<T> MakeForwardRowIterator() {
+    return DirectionalIterator<T>(*this, 1, 0);
+  }
+  DirectionalIterator<T> MakeReverseRowIterator() {
+    return DirectionalIterator<T>(*this, -1, 0);
+  }
+  DirectionalIterator<T> MakeForwardColumnIterator() {
+    return DirectionalIterator<T>(*this, 0, 1);
+  }
+  DirectionalIterator<T> MakeReverseColumnIterator() {
+    return DirectionalIterator<T>(*this, 0, -1);
+  }
 
  private:
   int row_, col_, cur_;

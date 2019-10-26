@@ -8,14 +8,14 @@ Runner::Runner(DirectionalIterator<const unsigned char> iter)
 
 int Runner::CountNext() {
   auto try_next = [&]() {
-                    bool ret = iter_.Next();
-                    if (!ret) {
-                      iter_empty_ = true;
-                    } else {
-                      ++iter_pos_;
-                    }
-                    return ret;
-                  };
+    bool ret = iter_.Next();
+    if (!ret) {
+      iter_empty_ = true;
+    } else {
+      ++iter_pos_;
+    }
+    return ret;
+  };
 
   int len;
   const unsigned char want = iter_.Get();
