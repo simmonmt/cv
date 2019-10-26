@@ -11,7 +11,6 @@
 #include "qrcode/runner.h"
 
 ABSL_FLAG(std::string, input, "", "Input file");
-ABSL_FLAG(int, line, -1, "Process this line only");
 ABSL_FLAG(bool, display, false, "Display the B&W image");
 
 namespace {
@@ -91,21 +90,11 @@ int main(int argc, char** argv) {
 
   uchar* image_px = image.ptr<uchar>(0);
   std::vector<std::pair<int, Candidate>> candidates;
-  if (absl::GetFlag(FLAGS_line) >= 0) {
-    const int row = absl::GetFlag(FLAGS_line);
+  for (int row = 0; row < image.rows; ++row) {
     std::vector<Candidate> row_candidates = processRow(
         absl::Span<const uchar>(image_px + row * image.cols, image.cols));
     for (const auto& candidate : row_candidates) {
       candidates.emplace_back(row, candidate);
-    }
-
-  } else {
-    for (int row = 0; row < image.rows; ++row) {
-      std::vector<Candidate> row_candidates = processRow(
-          absl::Span<const uchar>(image_px + row * image.cols, image.cols));
-      for (const auto& candidate : row_candidates) {
-        candidates.emplace_back(row, candidate);
-      }
     }
   }
 
