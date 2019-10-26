@@ -41,6 +41,10 @@ cc_library(
     name = "qr",
     srcs = [ "qr.cc" ],
     hdrs = [ "qr.h" ],
+    deps = [
+        ":point",
+        "@com_google_absl//absl/types:optional",
+    ],
 )
 
 cc_test(

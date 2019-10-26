@@ -1,9 +1,14 @@
 #include "qrcode/qr.h"
 
 #include "absl/base/macros.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace {
+
+using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Optional;
 
 TEST(IsPositioningBlockTest, Test) {
   struct TestCase {
@@ -21,6 +26,22 @@ TEST(IsPositioningBlockTest, Test) {
     const TestCase& tc = kTestCases[i];
     EXPECT_EQ(tc.expected, IsPositioningBlock(tc.lens)) << "case " << i;
   }
+}
+
+TEST(ClusterPointsTest, Test) {
+  static std::vector<Point> kPoints = {{10, 10},  //
+                                       {11, 11},  // 2 away from 10, 10
+                                       {11, 12},  // 3 away from 10, 10
+                                       {20, 20},  //
+                                       {30, 30}};
+
+  // Just right
+  EXPECT_THAT(
+      ClusterPoints(kPoints, 5, 99),
+      Optional(ElementsAre(Point(10, 10), Point(20, 20), Point(30, 30))));
+
+  // Too many clusters
+  EXPECT_THAT(ClusterPoints(kPoints, 5, 2), Eq(absl::nullopt));
 }
 
 }  // namespace

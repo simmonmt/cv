@@ -30,3 +30,35 @@ bool IsPositioningBlock(const std::vector<int>& lens) {
 
   return true;
 }
+
+absl::optional<std::vector<Point>> ClusterPoints(const std::vector<Point>& in,
+                                                 int thresh, int max_clusters) {
+  std::vector<Point> clusters;
+  clusters.reserve(max_clusters);
+
+  auto dist = [](const Point& a, const Point& b) {
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y);
+  };
+
+  for (const Point& point : in) {
+    bool found = false;
+    for (const Point& cluster : clusters) {
+      if (dist(point, cluster) <= thresh) {
+        found = true;
+        break;  // it's in an existing cluster, so discard
+      }
+    }
+
+    if (found) {
+      continue;
+    }
+
+    if (clusters.size() >= max_clusters) {
+      return absl::nullopt;  // too many clusters
+    }
+
+    clusters.push_back(point);
+  }
+
+  return clusters;
+}
