@@ -112,11 +112,6 @@ bool TryOrder(const Point& a, const Point& b, const Point& c) {
 
 }  // namespace
 
-std::ostream& operator<<(std::ostream& stream, const PositioningPoints& pp) {
-  return stream << "PP<tl:" << pp.top_left << " tr:" << pp.top_right
-                << " bl:" << pp.bottom_left << ">";
-}
-
 absl::optional<PositioningPoints> OrderPositioningPoints(const Point& a,
                                                          const Point& b,
                                                          const Point& c) {

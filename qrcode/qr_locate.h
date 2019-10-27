@@ -9,6 +9,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "qrcode/point.h"
+#include "qrcode/qr_types.h"
 
 bool IsPositioningBlock(const std::vector<int>& lens);
 
@@ -19,19 +20,6 @@ bool IsPositioningBlock(const std::vector<int>& lens);
 // function will return early.
 absl::optional<std::vector<Point>> ClusterPoints(const std::vector<Point>& in,
                                                  int thresh, int max_clusters);
-
-struct PositioningPoints {
-  Point top_left;
-  Point top_right;
-  Point bottom_left;
-
-  bool operator==(const PositioningPoints& p) const {
-    return p.top_left == top_left && p.top_right == top_right &&
-           p.bottom_left == bottom_left;
-  }
-};
-
-std::ostream& operator<<(std::ostream& stream, const PositioningPoints& pp);
 
 // Orders three points such that points 1 and 2 form a line that is
 // perpendicular to the line formed by points 2 and 3.

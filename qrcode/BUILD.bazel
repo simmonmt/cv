@@ -5,6 +5,7 @@ cc_binary(
         ":debug_image",
         ":point",
         ":qr_locate",
+        ":qr_types",
         ":runner",
         "@opencv//:opencv",
         "@com_google_absl//absl/flags:flag",
@@ -44,6 +45,7 @@ cc_library(
     deps = [
         ":pixel_iterator",
         ":point",
+        ":qr_types",
         ":runner",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -89,3 +91,9 @@ cc_library(
     srcs = ["point.cc" ],
     hdrs = ["point.h" ],
     deps = [ "@com_google_absl//absl/strings" ])
+
+cc_library(
+    name = "qr_types",
+    srcs = [ "qr_types.cc" ],
+    hdrs = ["qr_types.h" ],
+    deps = [ ":point" ])
