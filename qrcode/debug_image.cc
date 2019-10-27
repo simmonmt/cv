@@ -48,8 +48,12 @@ void DebugImage::Crosshairs(const Point& point) {
   int min_x = std::max(point.x - 50, 0);
   int max_x = std::min(point.x + 50, mat_.cols - 1);
 
+  HighlightRow(point.y - 1, min_x, max_x);
   HighlightRow(point.y, min_x, max_x);
+  HighlightRow(point.y + 1, min_x, max_x);
+  HighlightCol(point.x - 1, min_y, max_y);
   HighlightCol(point.x, min_y, max_y);
+  HighlightCol(point.x + 1, min_y, max_y);
 }
 
 cv::Mat DebugImage::Mat() { return mat_; }
