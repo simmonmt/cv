@@ -6,7 +6,9 @@
 
 namespace {
 
+using ::testing::AnyOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Optional;
 
@@ -28,7 +30,7 @@ TEST(IsPositioningBlockTest, Test) {
   }
 }
 
-TEST(ClusterPointsTest, Test) {
+TEST(ClusterPointsTest, Simple) {
   static std::vector<Point> kPoints = {{10, 10},  //
                                        {11, 11},  // 2 away from 10, 10
                                        {11, 12},  // 3 away from 10, 10
@@ -42,6 +44,88 @@ TEST(ClusterPointsTest, Test) {
 
   // Too many clusters
   EXPECT_THAT(ClusterPoints(kPoints, 5, 2), Eq(absl::nullopt));
+}
+
+TEST(ClusterPointsTest, Large) {
+  static std::vector<Point> kPoints = {
+      {1582, 909},  {1582, 909},  {1581, 908},  {1581, 908},  {1581, 908},
+      {1580, 907},  {1579, 907},  {1578, 906},  {1577, 906},  {1577, 906},
+      {1576, 904},  {1576, 904},  {1575, 903},  {1574, 903},  {1573, 903},
+      {1573, 903},  {1572, 901},  {1571, 901},  {1570, 899},  {1570, 899},
+      {1569, 897},  {1567, 896},  {2271, 1410}, {2271, 1410}, {2270, 1408},
+      {2270, 1408}, {2269, 1408}, {2268, 1408}, {2267, 1407}, {2267, 1407},
+      {2266, 1406}, {2265, 1406}, {2265, 1406}, {2264, 1405}, {2264, 1405},
+      {2263, 1404}, {2262, 1404}, {2262, 1404}, {2261, 1404}, {2260, 1403},
+      {2259, 1403}, {2259, 1403}, {1072, 1598}, {1071, 1598}, {1070, 1598},
+      {1070, 1598}, {1070, 1598}, {1069, 1597}, {1068, 1596}, {1067, 1596},
+      {1066, 1595}, {1064, 1593}, {1064, 1593}, {1064, 1593}, {1063, 1593},
+      {1062, 1592}, {1061, 1592}, {1060, 1591}, {1060, 1591}, {1059, 1590},
+      {1058, 1590}, {1058, 1590}, {1058, 1590}};
+
+  EXPECT_THAT(ClusterPoints(kPoints, 50, 3),
+              Optional(ElementsAre(Point(1582, 909), Point(2271, 1410),
+                                   Point(1072, 1598))));
+}
+
+bool PointLess(const Point& a, const Point& b) {
+  if (a.y < b.y) {
+    return true;
+  } else if (a.y > b.y) {
+    return false;
+  } else {
+    return a.x < b.x;
+  }
+}
+
+TEST(OrderPositioningPoints, Exact) {
+  // Points must be in a correct order.
+  static const std::vector<Point> kPointsVecs[] = {
+      {
+          // Ninety degree angles
+          {50, 100},
+          {50, 50},
+          {100, 50},
+      },
+      {
+          // Synthetic values whose slope difference should be ~0. This set can
+          // tolerate a diff up to 0.9, but works fine with 0.1.
+          {9825, 1},
+          {19998, 9825},
+          {10174, 19998},
+      },
+      {
+          // Actual values from qrcode_tilt1.jpg. This set can tolerate a diff
+          // up to 0.8, but works fine with 0.1.
+          {1072, 1598},
+          {1582, 909},
+          {2271, 1410},
+      },
+
+      {
+          // Actual values from qrcode1_small.jpg.
+          {367, 1296},
+          {392, 525},
+          {1163, 539},
+      },
+  };
+
+  for (std::vector<Point> points : kPointsVecs) {
+    std::cout << "== trying points " << points[0] << " " << points[1] << " "
+              << points[2] << "\n";
+
+    std::vector<Point> allowed_order1 = {points[0], points[1], points[2]};
+    std::vector<Point> allowed_order2 = {points[2], points[1], points[0]};
+
+    std::sort(points.begin(), points.end(), PointLess);
+    for (int i = 0;; ++i) {
+      EXPECT_THAT(OrderPositioningPoints(points),
+                  Optional(AnyOf(ElementsAreArray(allowed_order1))))
+          << "order " << points[0] << " " << points[1] << " " << points[2];
+      if (!std::next_permutation(points.begin(), points.end(), PointLess)) {
+        break;
+      }
+    }
+  }
 }
 
 }  // namespace

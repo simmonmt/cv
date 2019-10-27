@@ -20,11 +20,11 @@ ABSL_FLAG(int, row, -1, "Use this row only for the first scan");
 
 namespace {
 
-// When clustering positioning block center points, we want to keep the clusters
-// tight. The clusterer will pick an initial point, and won't let any other
-// points in the cluster be more than this far (Manhattan distance) from that
-// initial point.
-constexpr int kPositioningBlockClusteringThreshold = 10;
+// The threshold for clustering candidate partioning block centers. We can get
+// away with 10 if the code is already properly oriented, but we need a bigger
+// threshold to cover angled cases where our ratio detection might have a harder
+// time.
+constexpr int kPositioningBlockClusteringThreshold = 50;
 
 int readBwImage(const std::string& path, cv::OutputArray out) {
   cv::Mat input = cv::imread(path, cv::IMREAD_COLOR);
@@ -177,18 +177,34 @@ int main(int argc, char** argv) {
 
   std::cout << "#candidates found: " << candidates.size() << "\n";
 
+  for (const Point& point : candidates) {
+    std::cout << "{" << point.x << "," << point.y << "},";
+  }
+  std::cout << "\n";
+
   absl::optional<std::vector<Point>> maybe_clusters =
-      ClusterPoints(candidates, kPositioningBlockClusteringThreshold, 3);
-  if (!maybe_clusters.has_value()) {
+      ClusterPoints(candidates, kPositioningBlockClusteringThreshold, 99);
+  if (!maybe_clusters.has_value() || maybe_clusters->size() != 3) {
     std::cerr << "clustering failed: didn't find 3 positioning blocks\n";
     return -1;
   }
 
   const std::vector<Point> clusters = std::move(maybe_clusters.value());
   std::cout << "#clustered candidates found: " << clusters.size() << "\n";
-
   for (const Point& point : clusters) {
-    debug_image->Crosshairs(point);
+    std::cout << "cluster " << point << "\n";
+  }
+
+  absl::optional<std::vector<Point>> maybe_ordered =
+      OrderPositioningPoints(clusters);
+  if (!maybe_ordered.has_value()) {
+    std::cerr << "failed to find correct ordering\n";
+    return -1;
+  }
+
+  const std::vector<Point> ordered = std::move(maybe_ordered.value());
+  for (const Point& point : ordered) {
+    std::cout << "point " << point << "\n";
   }
 
   if (absl::GetFlag(FLAGS_display)) {

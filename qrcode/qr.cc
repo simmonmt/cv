@@ -1,6 +1,10 @@
 #include "qrcode/qr.h"
 
+#include <assert.h>
+#include <cmath>
 #include <vector>
+
+#include "absl/base/macros.h"
 
 bool IsPositioningBlock(const std::vector<int>& lens) {
   const int lb = lens[0];
@@ -61,4 +65,68 @@ absl::optional<std::vector<Point>> ClusterPoints(const std::vector<Point>& in,
   }
 
   return clusters;
+}
+
+namespace {
+
+bool TryOrder(const Point& a, const Point& b, const Point& c) {
+  double rise_atob = static_cast<double>(b.y - a.y);
+  double run_atob = static_cast<double>(b.x - a.x);
+  double slope_atob = rise_atob / run_atob;
+
+  double rise_btoc = static_cast<double>(c.y - b.y);
+  double run_btoc = static_cast<double>(c.x - b.x);
+  double slope_btoc = rise_btoc / run_btoc;
+
+  // Are they at right angles to each other?
+  //
+  // Take the reciprocal of the slope with the larger absolute value
+  // so we're making consistent comparisons regardless of order. The
+  // values we get now as a and b will later arrive in b and a. Using
+  // consistent ordering also makes it possible to use a consistent
+  // threshold.
+  double diff;
+  if (std::abs(slope_atob) > std::abs(slope_btoc)) {
+    diff = std::abs((-1.0 / slope_atob) - slope_btoc);
+  } else {
+    diff = std::abs(slope_atob - (-1.0 / slope_btoc));
+  }
+  // std::cout << a << " " << b << " " << c << " diff " << diff << "\n";
+  if (diff >= 0.1) {
+    return false;
+  }
+
+  // Is it a right turn from atob to btoc? Take the cross product of
+  // the two (made a little more annoying because we're using a,b,c to
+  // refer to points while most descriptions use a and b for the
+  // vectors).
+  double dir = run_atob * rise_btoc - run_btoc * rise_atob;
+  // std::cout << a << " " << b << " " << c << " dir " << dir << "\n";
+  return dir > 0;
+}
+
+}  // namespace
+
+absl::optional<std::vector<Point>> OrderPositioningPoints(
+    const std::vector<Point>& in) {
+  assert(in.size() == 3);
+
+  // We want an ordering of points such that the slope of the line
+  // described by points a and b is the negative reciprocal of the
+  // slope of the line described by points b and c.
+  static const int kOrders[][3] = {
+      {0, 1, 2}, {0, 2, 1}, {1, 0, 2}, {1, 2, 0}, {2, 0, 1}, {2, 1, 0},
+  };
+
+  for (int i = 0; i < ABSL_ARRAYSIZE(kOrders); ++i) {
+    const Point& a = in[kOrders[i][0]];
+    const Point& b = in[kOrders[i][1]];
+    const Point& c = in[kOrders[i][2]];
+
+    if (TryOrder(a, b, c)) {
+      return std::vector<Point>({a, b, c});
+    }
+  }
+
+  return absl::nullopt;
 }

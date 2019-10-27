@@ -17,4 +17,9 @@ bool IsPositioningBlock(const std::vector<int>& lens);
 absl::optional<std::vector<Point>> ClusterPoints(const std::vector<Point>& in,
                                                  int thresh, int max_clusters);
 
+// Orders three points such that points 1 and 2 form a line that is
+// perpendicular to the line formed by points 2 and 3.
+absl::optional<std::vector<Point>> OrderPositioningPoints(
+    const std::vector<Point>& in);
+
 #endif  // _QRCODE_QR_H_
