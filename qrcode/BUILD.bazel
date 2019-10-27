@@ -7,20 +7,20 @@ cc_binary(
         ":qr_locate",
         ":qr_types",
         ":runner",
-        "@opencv//:opencv",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:span",
+        "@opencv",
     ],
 )
 
 cc_library(
     name = "runner",
-    srcs = [ "runner.cc" ],
-    hdrs = [ "runner.h" ],
+    srcs = ["runner.cc"],
+    hdrs = ["runner.h"],
     deps = [
         ":pixel_iterator",
         "@com_google_absl//absl/types:optional",
@@ -30,8 +30,8 @@ cc_library(
 
 cc_test(
     name = "runner_test",
-    srcs = [ "runner_test.cc" ],
     size = "small",
+    srcs = ["runner_test.cc"],
     deps = [
         ":runner",
         "@com_google_googletest//:gtest_main",
@@ -40,8 +40,8 @@ cc_test(
 
 cc_library(
     name = "qr_locate",
-    srcs = [ "qr_locate.cc" ],
-    hdrs = [ "qr_locate.h" ],
+    srcs = ["qr_locate.cc"],
+    hdrs = ["qr_locate.h"],
     deps = [
         ":pixel_iterator",
         ":point",
@@ -52,14 +52,14 @@ cc_library(
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:variant",
-        "@opencv//:opencv",
+        "@opencv",
     ],
 )
 
 cc_library(
     name = "qr_locate_utils",
-    srcs = [ "qr_locate_utils.cc" ],
-    hdrs = [ "qr_locate_utils.h" ],
+    srcs = ["qr_locate_utils.cc"],
+    hdrs = ["qr_locate_utils.h"],
     deps = [
         ":pixel_iterator",
         ":point",
@@ -67,13 +67,13 @@ cc_library(
         ":runner",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_absl//absl/types:optional",
-        ],
-    )
+    ],
+)
 
 cc_test(
     name = "qr_locate_utils_test",
-    srcs = [ "qr_locate_utils_test.cc" ],
     size = "small",
+    srcs = ["qr_locate_utils_test.cc"],
     deps = [
         ":qr_locate",
         "@com_google_absl//absl/base",
@@ -83,32 +83,40 @@ cc_test(
 
 cc_library(
     name = "pixel_iterator",
-    hdrs = [ "pixel_iterator.h" ],
-    )
+    hdrs = ["pixel_iterator.h"],
+)
 
 cc_test(
     name = "pixel_iterator_test",
     size = "small",
-    srcs = [ "pixel_iterator_test.cc" ],
-    deps = [ ":pixel_iterator",
-             "@com_google_googletest//:gtest_main"])
+    srcs = ["pixel_iterator_test.cc"],
+    deps = [
+        ":pixel_iterator",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
 
 cc_library(
     name = "debug_image",
-    hdrs = [ "debug_image.h" ],
-    srcs = [ "debug_image.cc" ],
-    deps = [":point",
-            "@opencv//:opencv",
-            "@com_google_absl//absl/memory",])
+    srcs = ["debug_image.cc"],
+    hdrs = ["debug_image.h"],
+    deps = [
+        ":point",
+        "@com_google_absl//absl/memory",
+        "@opencv",
+    ],
+)
 
 cc_library(
     name = "point",
-    srcs = ["point.cc" ],
-    hdrs = ["point.h" ],
-    deps = [ "@com_google_absl//absl/strings" ])
+    srcs = ["point.cc"],
+    hdrs = ["point.h"],
+    deps = ["@com_google_absl//absl/strings"],
+)
 
 cc_library(
     name = "qr_types",
-    srcs = [ "qr_types.cc" ],
-    hdrs = ["qr_types.h" ],
-    deps = [ ":point" ])
+    srcs = ["qr_types.cc"],
+    hdrs = ["qr_types.h"],
+    deps = [":point"],
+)
