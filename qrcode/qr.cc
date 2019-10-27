@@ -130,3 +130,21 @@ absl::optional<std::vector<Point>> OrderPositioningPoints(
 
   return absl::nullopt;
 }
+
+double CalculateRotationAngle(const Point& a, const Point& b) {
+  const double rise = b.y - a.y;
+  const double run = b.x - a.x;
+
+  return std::atan(run / rise) / (2 * M_PI) * 360.0;
+}
+
+Point CalculateCodeCenter(const Point& a, const Point& b, const Point& c) {
+  double atob_half_xoff = (b.x - a.x) / 2;
+  double atob_half_yoff = (b.y - a.y) / 2;
+
+  double btoc_half_xoff = (c.x - b.x) / 2;
+  double btoc_half_yoff = (c.y - b.y) / 2;
+
+  return Point(a.x + atob_half_xoff + btoc_half_xoff,
+               a.y + atob_half_yoff + btoc_half_yoff);
+}

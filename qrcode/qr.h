@@ -22,4 +22,8 @@ absl::optional<std::vector<Point>> ClusterPoints(const std::vector<Point>& in,
 absl::optional<std::vector<Point>> OrderPositioningPoints(
     const std::vector<Point>& in);
 
+double CalculateRotationAngle(const Point& a, const Point& b);
+
+Point CalculateCodeCenter(const Point& a, const Point& b, const Point& c);
+
 #endif  // _QRCODE_QR_H_

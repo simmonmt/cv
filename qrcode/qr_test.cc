@@ -77,7 +77,7 @@ bool PointLess(const Point& a, const Point& b) {
   }
 }
 
-TEST(OrderPositioningPoints, Exact) {
+TEST(OrderPositioningPointsTest, Test) {
   // Points must be in a correct order.
   static const std::vector<Point> kPointsVecs[] = {
       {
@@ -126,6 +126,11 @@ TEST(OrderPositioningPoints, Exact) {
       }
     }
   }
+}
+
+TEST(CalculateRotationAngleTest, Test) {
+  EXPECT_EQ(90.0, CalculateRotationAngle(Point(50, 50), Point(100, 50)));
+  EXPECT_EQ(-90.0, CalculateRotationAngle(Point(100, 50), Point(50, 50)));
 }
 
 }  // namespace

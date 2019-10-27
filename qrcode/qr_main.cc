@@ -207,11 +207,26 @@ int main(int argc, char** argv) {
     std::cout << "point " << point << "\n";
   }
 
+  double rotation_angle = CalculateRotationAngle(ordered[0], ordered[1]);
+  std::cout << "rotation angle " << rotation_angle << "\n";
+
+  Point center = CalculateCodeCenter(ordered[0], ordered[1], ordered[2]);
+  std::cout << "rotation center " << center << "\n";
+  debug_image->Crosshairs(center);
+
+  cv::Mat rotation_matrix = cv::getRotationMatrix2D(
+      cv::Point2f(center.x, center.y), -rotation_angle, 1.0);
+
+  cv::Mat rotated_image;
+  cv::warpAffine(image, rotated_image, rotation_matrix,
+                 {image.cols, image.rows});
+
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
-    cv::imshow(kWindowName, debug_image->Mat());
-    cv::waitKey(15000);
+    // cv::imshow(kWindowName, debug_image->Mat());
+    cv::imshow(kWindowName, rotated_image);
+    cv::waitKey(0);
   }
 
   return 0;
