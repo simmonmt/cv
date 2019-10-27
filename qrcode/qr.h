@@ -40,6 +40,7 @@ absl::optional<PositioningPoints> OrderPositioningPoints(const Point& a,
 // Calculate the angle of rotation of the code relative to upright.
 double CalculateCodeRotationAngle(const PositioningPoints& points);
 
-Point CalculateCodeCenter(const Point& a, const Point& b, const Point& c);
+// Calculate the center of the code from the positioning points.
+Point CalculateCodeCenter(const PositioningPoints& points);
 
 #endif  // _QRCODE_QR_H_

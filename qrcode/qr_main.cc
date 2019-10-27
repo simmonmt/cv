@@ -209,9 +209,7 @@ int main(int argc, char** argv) {
   double rotation_angle = CalculateCodeRotationAngle(positioning_points);
   std::cout << "rotation angle " << rotation_angle << "\n";
 
-  Point center = CalculateCodeCenter(positioning_points.bottom_left,
-                                     positioning_points.top_left,
-                                     positioning_points.top_right);
+  Point center = CalculateCodeCenter(positioning_points);
   std::cout << "rotation center " << center << "\n";
   debug_image->Crosshairs(center);
 

@@ -149,13 +149,13 @@ double CalculateCodeRotationAngle(const PositioningPoints& points) {
   return std::atan(run / rise) / (2 * M_PI) * 360.0;
 }
 
-Point CalculateCodeCenter(const Point& a, const Point& b, const Point& c) {
-  double atob_half_xoff = (b.x - a.x) / 2;
-  double atob_half_yoff = (b.y - a.y) / 2;
+Point CalculateCodeCenter(const PositioningPoints& points) {
+  double atob_half_xoff = (points.top_left.x - points.bottom_left.x) / 2;
+  double atob_half_yoff = (points.top_left.y - points.bottom_left.y) / 2;
 
-  double btoc_half_xoff = (c.x - b.x) / 2;
-  double btoc_half_yoff = (c.y - b.y) / 2;
+  double btoc_half_xoff = (points.top_right.x - points.top_left.x) / 2;
+  double btoc_half_yoff = (points.top_right.y - points.top_left.y) / 2;
 
-  return Point(a.x + atob_half_xoff + btoc_half_xoff,
-               a.y + atob_half_yoff + btoc_half_yoff);
+  return Point(points.bottom_left.x + atob_half_xoff + btoc_half_xoff,
+               points.bottom_left.y + atob_half_yoff + btoc_half_yoff);
 }
