@@ -11,7 +11,7 @@
 
 #include "qrcode/debug_image.h"
 #include "qrcode/point.h"
-#include "qrcode/qr.h"
+#include "qrcode/qr_locate.h"
 #include "qrcode/runner.h"
 
 ABSL_FLAG(std::string, input, "", "Input file");
