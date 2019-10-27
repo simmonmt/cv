@@ -1,15 +1,20 @@
 #include "qrcode/qr.h"
 
+#include <math.h>
+#include <cmath>
+
 #include "absl/base/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace {
 
-using ::testing::AnyOf;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::Optional;
 
 PositioningPoints MakePositioningPoints(const Point& top_left,
@@ -127,6 +132,52 @@ TEST(CalculateRotationAngleTest, Test) {
                       Point(100, 50), Point(100, 100), Point(50, 50))));
   EXPECT_EQ(-90.0, CalculateCodeRotationAngle(MakePositioningPoints(
                        Point(50, 50), Point(50, 0), Point(100, 50))));
+}
+
+TEST(CalculateCodeCenterTest, Simple) {
+  PositioningPoints points;
+  points.bottom_left = Point(50, 100);
+  points.top_left = Point(50, 50);
+  points.top_right = Point(100, 50);
+
+  EXPECT_THAT(CalculateCodeCenter(points), Eq(Point(75, 75)));
+}
+
+TEST(CalculateCodeCenterTest, Exhaustive) {
+  const int kNumSteps = 360;
+  const double kRadius = 50;
+  const double kOffset = 100;
+  for (int i = 0; i < kNumSteps; ++i) {
+    double inc = (M_PI * 2) * (static_cast<double>(i) / kNumSteps);
+
+    PositioningPoints points;
+    std::vector<Point*> pp = {&points.bottom_left, &points.top_left,
+                              &points.top_right};
+    std::vector<double> thetas = {inc + M_PI, inc + M_PI_2, inc};
+
+    for (int i = 0; i < pp.size(); ++i) {
+      const double theta = thetas[i];
+      Point* point = pp[i];
+
+      point->x = std::sin(theta) * kRadius + kOffset;
+      point->y = std::cos(theta) * kRadius + kOffset;
+    }
+
+    // This is a sanity check to make sure the order of angles in pp and thetas
+    // is correct, and that in turn points is a valid arrangement of positioning
+    // points. If it fails this test is probably broken (or
+    // OrderPositioningPoints is broken).
+    ASSERT_THAT(OrderPositioningPoints(points.top_left, points.top_right,
+                                       points.bottom_left),
+                Optional(Eq(points)))
+        << i;
+
+    // Because math and rounding we won't get exactly 100,100 each time. Allow
+    // [99-101] for each axis.
+    Point center = CalculateCodeCenter(points);
+    EXPECT_THAT(center.x, AllOf(Ge(99), Le(101)));
+    EXPECT_THAT(center.y, AllOf(Ge(99), Le(101)));
+  }
 }
 
 }  // namespace
