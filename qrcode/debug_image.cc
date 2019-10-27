@@ -56,4 +56,15 @@ void DebugImage::Crosshairs(const Point& point) {
   HighlightCol(point.x + 1, min_y, max_y);
 }
 
+void DebugImage::HighlightBox(const Point& a, const Point& b) {
+  Point top_left(std::min(a.x, b.x), std::min(a.y, b.y));
+  Point bot_right(std::max(a.x, b.x), std::max(a.y, b.y));
+
+  HighlightRow(top_left.y, top_left.x, bot_right.x);
+  HighlightRow(bot_right.y, top_left.x, bot_right.x);
+
+  HighlightCol(top_left.x, top_left.y, bot_right.y);
+  HighlightCol(bot_right.x, top_left.y, bot_right.y);
+}
+
 cv::Mat DebugImage::Mat() { return mat_; }

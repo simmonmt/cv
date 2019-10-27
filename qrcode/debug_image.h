@@ -12,6 +12,8 @@ class DebugImage {
 
   static std::unique_ptr<DebugImage> FromGray(cv::Mat gray);
 
+  void HighlightBox(const Point& a, const Point& b);
+
   void HighlightRow(int row, int from, int to);
   void HighlightCol(int col, int from, int to);
 
