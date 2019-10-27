@@ -1,4 +1,4 @@
-#include "qrcode/qr_locate.h"
+#include "qrcode/qr_locate_utils.h"
 
 #include <math.h>
 #include <cmath>
