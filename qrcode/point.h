@@ -6,6 +6,7 @@
 // A simple 2D point. This exists to limit the spread of OpenCV APIs (and
 // linking of OpenCV libraries).
 struct Point {
+  Point() : x(0), y(0) {}
   Point(int x, int y) : x(x), y(y) {}
 
   bool operator==(const Point& p) const { return x == p.x && y == p.y; }

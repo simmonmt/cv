@@ -43,6 +43,7 @@ cc_library(
     hdrs = [ "qr.h" ],
     deps = [
         ":point",
+        "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
     ],
 )

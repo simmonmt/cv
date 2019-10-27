@@ -67,59 +67,53 @@ TEST(ClusterPointsTest, Large) {
                                    Point(1072, 1598))));
 }
 
-bool PointLess(const Point& a, const Point& b) {
-  if (a.y < b.y) {
-    return true;
-  } else if (a.y > b.y) {
-    return false;
-  } else {
-    return a.x < b.x;
+class OrderPositioningPointsTest : public ::testing::Test {
+ public:
+  static bool PointLess(const Point& a, const Point& b) {
+    if (a.y < b.y) {
+      return true;
+    } else if (a.y > b.y) {
+      return false;
+    } else {
+      return a.x < b.x;
+    }
   }
-}
 
-TEST(OrderPositioningPointsTest, Test) {
-  // Points must be in a correct order.
-  static const std::vector<Point> kPointsVecs[] = {
-      {
-          // Ninety degree angles
-          {50, 100},
-          {50, 50},
-          {100, 50},
-      },
-      {
-          // Synthetic values whose slope difference should be ~0. This set can
-          // tolerate a diff up to 0.9, but works fine with 0.1.
-          {9825, 1},
-          {19998, 9825},
-          {10174, 19998},
-      },
-      {
-          // Actual values from qrcode_tilt1.jpg. This set can tolerate a diff
-          // up to 0.8, but works fine with 0.1.
-          {1072, 1598},
-          {1582, 909},
-          {2271, 1410},
-      },
+  PositioningPoints MakePositioningPoints(const Point& top_left,
+                                          const Point& top_right,
+                                          const Point& bottom_left) {
+    PositioningPoints pp;
+    pp.top_left = top_left;
+    pp.top_right = top_right;
+    pp.bottom_left = bottom_left;
+    return pp;
+  }
+};
 
-      {
-          // Actual values from qrcode1_small.jpg.
-          {367, 1296},
-          {392, 525},
-          {1163, 539},
-      },
+TEST_F(OrderPositioningPointsTest, Test) {
+  static const PositioningPoints kTestCases[] = {
+      // Ninety degree angles
+      MakePositioningPoints({50, 50}, {100, 50}, {50, 100}),
+      // Synthetic values whose slope difference should be ~0. This set can
+      // tolerate a diff up to 0.9, but works fine with 0.1.
+      MakePositioningPoints({19998, 9825}, {10174, 19998}, {9825, 1}),
+      // Actual values from qrcode_tilt1.jpg. This set can tolerate a diff
+      // up to 0.8, but works fine with 0.1.
+      MakePositioningPoints({1582, 909}, {2271, 1410}, {1072, 1598}),
+      // Actual values from qrcode1_small.jpg.
+      MakePositioningPoints({392, 525}, {1163, 539}, {367, 1296}),
   };
 
-  for (std::vector<Point> points : kPointsVecs) {
-    std::cout << "== trying points " << points[0] << " " << points[1] << " "
-              << points[2] << "\n";
+  for (const PositioningPoints& expected : kTestCases) {
+    std::cout << "== trying " << expected;
 
-    std::vector<Point> allowed_order1 = {points[0], points[1], points[2]};
-    std::vector<Point> allowed_order2 = {points[2], points[1], points[0]};
+    std::vector<Point> points = {expected.top_left, expected.top_right,
+                                 expected.bottom_left};
 
     std::sort(points.begin(), points.end(), PointLess);
     for (int i = 0;; ++i) {
-      EXPECT_THAT(OrderPositioningPoints(points),
-                  Optional(AnyOf(ElementsAreArray(allowed_order1))))
+      EXPECT_THAT(OrderPositioningPoints(points[0], points[1], points[2]),
+                  Optional(expected))
           << "order " << points[0] << " " << points[1] << " " << points[2];
       if (!std::next_permutation(points.begin(), points.end(), PointLess)) {
         break;

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/strings/str_cat.h"
 
 bool IsPositioningBlock(const std::vector<int>& lens) {
   const int lb = lens[0];
@@ -107,9 +108,15 @@ bool TryOrder(const Point& a, const Point& b, const Point& c) {
 
 }  // namespace
 
-absl::optional<std::vector<Point>> OrderPositioningPoints(
-    const std::vector<Point>& in) {
-  assert(in.size() == 3);
+std::ostream& operator<<(std::ostream& stream, const PositioningPoints& pp) {
+  return stream << "PP<tl:" << pp.top_left << " tr:" << pp.top_right
+                << " bl:" << pp.bottom_left << ">";
+}
+
+absl::optional<PositioningPoints> OrderPositioningPoints(const Point& a,
+                                                         const Point& b,
+                                                         const Point& c) {
+  std::vector<const Point*> in = {&a, &b, &c};
 
   // We want an ordering of points such that the slope of the line
   // described by points a and b is the negative reciprocal of the
@@ -119,12 +126,16 @@ absl::optional<std::vector<Point>> OrderPositioningPoints(
   };
 
   for (int i = 0; i < ABSL_ARRAYSIZE(kOrders); ++i) {
-    const Point& a = in[kOrders[i][0]];
-    const Point& b = in[kOrders[i][1]];
-    const Point& c = in[kOrders[i][2]];
+    const Point& a = *in[kOrders[i][0]];
+    const Point& b = *in[kOrders[i][1]];
+    const Point& c = *in[kOrders[i][2]];
 
     if (TryOrder(a, b, c)) {
-      return std::vector<Point>({a, b, c});
+      PositioningPoints points;
+      points.bottom_left = a;
+      points.top_left = b;
+      points.top_right = c;
+      return points;
     }
   }
 

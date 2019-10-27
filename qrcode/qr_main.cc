@@ -195,22 +195,24 @@ int main(int argc, char** argv) {
     std::cout << "cluster " << point << "\n";
   }
 
-  absl::optional<std::vector<Point>> maybe_ordered =
-      OrderPositioningPoints(clusters);
-  if (!maybe_ordered.has_value()) {
+  absl::optional<PositioningPoints> maybe_positioning_points =
+      OrderPositioningPoints(clusters[0], clusters[1], clusters[2]);
+  if (!maybe_positioning_points.has_value()) {
     std::cerr << "failed to find correct ordering\n";
     return -1;
   }
 
-  const std::vector<Point> ordered = std::move(maybe_ordered.value());
-  for (const Point& point : ordered) {
-    std::cout << "point " << point << "\n";
-  }
+  const PositioningPoints positioning_points =
+      std::move(maybe_positioning_points.value());
+  std::cout << "positioning points: " << positioning_points << "\n";
 
-  double rotation_angle = CalculateRotationAngle(ordered[0], ordered[1]);
+  double rotation_angle = CalculateRotationAngle(positioning_points.bottom_left,
+                                                 positioning_points.top_left);
   std::cout << "rotation angle " << rotation_angle << "\n";
 
-  Point center = CalculateCodeCenter(ordered[0], ordered[1], ordered[2]);
+  Point center = CalculateCodeCenter(positioning_points.bottom_left,
+                                     positioning_points.top_left,
+                                     positioning_points.top_right);
   std::cout << "rotation center " << center << "\n";
   debug_image->Crosshairs(center);
 
