@@ -27,6 +27,41 @@ PositioningPoints MakePositioningPoints(const Point& top_left,
   return pp;
 }
 
+// Returns a set of positioning points at all angles.
+//
+// Given a center and a radius, this function will construct a series of
+// positioning points, each of which are at a different rotation relative to the
+// center. The returned points will represent ~all possible orientations of
+// positioning points.
+//
+// NOTE: radius must not be greater than center.x or center.y.
+std::vector<PositioningPoints> MakeRotatedPositioningPoints(const Point& center,
+                                                            double radius) {
+  const int kNumSteps = 360;
+
+  std::vector<PositioningPoints> out;
+  for (int i = 0; i < kNumSteps; ++i) {
+    double inc = (M_PI * 2) * (static_cast<double>(i) / kNumSteps);
+
+    PositioningPoints points;
+    std::vector<Point*> pp = {&points.bottom_left, &points.top_left,
+                              &points.top_right};
+    static const std::vector<double> kThetas = {inc + M_PI, inc + M_PI_2, inc};
+
+    for (int i = 0; i < pp.size(); ++i) {
+      const double theta = kThetas[i];
+      Point* point = pp[i];
+
+      point->x = std::sin(theta) * radius + center.x;
+      point->y = std::cos(theta) * radius + center.y;
+    }
+
+    out.push_back(points);
+  }
+
+  return out;
+}
+
 TEST(IsPositioningBlockTest, Test) {
   struct TestCase {
     std::vector<int> lens;
@@ -95,7 +130,7 @@ class OrderPositioningPointsTest : public ::testing::Test {
   }
 };
 
-TEST_F(OrderPositioningPointsTest, Test) {
+TEST_F(OrderPositioningPointsTest, Static) {
   static const PositioningPoints kTestCases[] = {
       // Ninety degree angles
       MakePositioningPoints({50, 50}, {100, 50}, {50, 100}),
@@ -127,6 +162,25 @@ TEST_F(OrderPositioningPointsTest, Test) {
   }
 }
 
+TEST_F(OrderPositioningPointsTest, Exhaustive) {
+  const Point center = {100, 100};
+  for (const PositioningPoints expected :
+       MakeRotatedPositioningPoints(center, 50)) {
+    std::vector<Point> points = {expected.top_left, expected.top_right,
+                                 expected.bottom_left};
+
+    std::sort(points.begin(), points.end(), PointLess);
+    for (int i = 0;; ++i) {
+      EXPECT_THAT(OrderPositioningPoints(points[0], points[1], points[2]),
+                  Optional(expected))
+          << "order " << points[0] << " " << points[1] << " " << points[2];
+      if (!std::next_permutation(points.begin(), points.end(), PointLess)) {
+        break;
+      }
+    }
+  }
+}
+
 TEST(CalculateRotationAngleTest, Test) {
   EXPECT_EQ(90.0, CalculateCodeRotationAngle(MakePositioningPoints(
                       Point(100, 50), Point(100, 100), Point(50, 50))));
@@ -134,7 +188,7 @@ TEST(CalculateRotationAngleTest, Test) {
                        Point(50, 50), Point(50, 0), Point(100, 50))));
 }
 
-TEST(CalculateCodeCenterTest, Simple) {
+TEST(CalculateCodeCenterTest, Static) {
   PositioningPoints points;
   points.bottom_left = Point(50, 100);
   points.top_left = Point(50, 50);
@@ -144,39 +198,14 @@ TEST(CalculateCodeCenterTest, Simple) {
 }
 
 TEST(CalculateCodeCenterTest, Exhaustive) {
-  const int kNumSteps = 360;
-  const double kRadius = 50;
-  const double kOffset = 100;
-  for (int i = 0; i < kNumSteps; ++i) {
-    double inc = (M_PI * 2) * (static_cast<double>(i) / kNumSteps);
-
-    PositioningPoints points;
-    std::vector<Point*> pp = {&points.bottom_left, &points.top_left,
-                              &points.top_right};
-    std::vector<double> thetas = {inc + M_PI, inc + M_PI_2, inc};
-
-    for (int i = 0; i < pp.size(); ++i) {
-      const double theta = thetas[i];
-      Point* point = pp[i];
-
-      point->x = std::sin(theta) * kRadius + kOffset;
-      point->y = std::cos(theta) * kRadius + kOffset;
-    }
-
-    // This is a sanity check to make sure the order of angles in pp and thetas
-    // is correct, and that in turn points is a valid arrangement of positioning
-    // points. If it fails this test is probably broken (or
-    // OrderPositioningPoints is broken).
-    ASSERT_THAT(OrderPositioningPoints(points.top_left, points.top_right,
-                                       points.bottom_left),
-                Optional(Eq(points)))
-        << i;
-
+  const Point center = {100, 100};
+  for (const PositioningPoints points :
+       MakeRotatedPositioningPoints(center, 50)) {
     // Because math and rounding we won't get exactly 100,100 each time. Allow
     // [99-101] for each axis.
     Point center = CalculateCodeCenter(points);
-    EXPECT_THAT(center.x, AllOf(Ge(99), Le(101)));
-    EXPECT_THAT(center.y, AllOf(Ge(99), Le(101)));
+    EXPECT_THAT(center.x, AllOf(Ge(99), Le(101))) << points;
+    EXPECT_THAT(center.y, AllOf(Ge(99), Le(101))) << points;
   }
 }
 
