@@ -142,9 +142,9 @@ absl::optional<PositioningPoints> OrderPositioningPoints(const Point& a,
   return absl::nullopt;
 }
 
-double CalculateRotationAngle(const Point& a, const Point& b) {
-  const double rise = b.y - a.y;
-  const double run = b.x - a.x;
+double CalculateCodeRotationAngle(const PositioningPoints& points) {
+  const double rise = points.top_left.y - points.bottom_left.y;
+  const double run = points.top_left.x - points.bottom_left.x;
 
   return std::atan(run / rise) / (2 * M_PI) * 360.0;
 }

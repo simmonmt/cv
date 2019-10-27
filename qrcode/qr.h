@@ -37,7 +37,8 @@ absl::optional<PositioningPoints> OrderPositioningPoints(const Point& a,
                                                          const Point& b,
                                                          const Point& c);
 
-double CalculateRotationAngle(const Point& a, const Point& b);
+// Calculate the angle of rotation of the code relative to upright.
+double CalculateCodeRotationAngle(const PositioningPoints& points);
 
 Point CalculateCodeCenter(const Point& a, const Point& b, const Point& c);
 

@@ -12,6 +12,16 @@ using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Optional;
 
+PositioningPoints MakePositioningPoints(const Point& top_left,
+                                        const Point& top_right,
+                                        const Point& bottom_left) {
+  PositioningPoints pp;
+  pp.top_left = top_left;
+  pp.top_right = top_right;
+  pp.bottom_left = bottom_left;
+  return pp;
+}
+
 TEST(IsPositioningBlockTest, Test) {
   struct TestCase {
     std::vector<int> lens;
@@ -78,16 +88,6 @@ class OrderPositioningPointsTest : public ::testing::Test {
       return a.x < b.x;
     }
   }
-
-  PositioningPoints MakePositioningPoints(const Point& top_left,
-                                          const Point& top_right,
-                                          const Point& bottom_left) {
-    PositioningPoints pp;
-    pp.top_left = top_left;
-    pp.top_right = top_right;
-    pp.bottom_left = bottom_left;
-    return pp;
-  }
 };
 
 TEST_F(OrderPositioningPointsTest, Test) {
@@ -123,8 +123,10 @@ TEST_F(OrderPositioningPointsTest, Test) {
 }
 
 TEST(CalculateRotationAngleTest, Test) {
-  EXPECT_EQ(90.0, CalculateRotationAngle(Point(50, 50), Point(100, 50)));
-  EXPECT_EQ(-90.0, CalculateRotationAngle(Point(100, 50), Point(50, 50)));
+  EXPECT_EQ(90.0, CalculateCodeRotationAngle(MakePositioningPoints(
+                      Point(100, 50), Point(100, 100), Point(50, 50))));
+  EXPECT_EQ(-90.0, CalculateCodeRotationAngle(MakePositioningPoints(
+                       Point(50, 50), Point(50, 0), Point(100, 50))));
 }
 
 }  // namespace

@@ -206,8 +206,7 @@ int main(int argc, char** argv) {
       std::move(maybe_positioning_points.value());
   std::cout << "positioning points: " << positioning_points << "\n";
 
-  double rotation_angle = CalculateRotationAngle(positioning_points.bottom_left,
-                                                 positioning_points.top_left);
+  double rotation_angle = CalculateCodeRotationAngle(positioning_points);
   std::cout << "rotation angle " << rotation_angle << "\n";
 
   Point center = CalculateCodeCenter(positioning_points.bottom_left,
