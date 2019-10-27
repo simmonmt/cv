@@ -1,5 +1,5 @@
-#ifndef _QRCODE_QR_H_
-#define _QRCODE_QR_H_ 1
+#ifndef _QRCODE_QR_LOCATE_H_
+#define _QRCODE_QR_LOCATE_H_ 1
 
 #include <iostream>
 #include <vector>
@@ -45,4 +45,4 @@ struct LocatedCode {
 absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
     cv::Mat image);
 
-#endif  // _QRCODE_QR_H_
+#endif  // _QRCODE_QR_LOCATE_H_
