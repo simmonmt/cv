@@ -133,3 +133,29 @@ cc_library(
     hdrs = ["qr_types.h"],
     deps = [":point"],
 )
+
+cc_library(
+    name = "qr_extract",
+    srcs = ["qr_extract.cc"],
+    hdrs = ["qr_extract.h"],
+    deps = [
+        ":point",
+        ":qr_locate",
+        ":qr_types",
+        "@com_google_absl//absl/types:variant",
+        "@opencv",
+    ],
+)
+
+cc_test(
+    name = "qr_extract_test",
+    size = "small",
+    srcs = ["qr_extract_test.cc"],
+    data = [
+        ":testdata/tilt.png",
+    ],
+    deps = [
+        ":qr_extract",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
