@@ -56,6 +56,19 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "qr_locate_test",
+    size = "small",
+    srcs = ["qr_locate_test.cc"],
+    data = [
+        ":testdata/qrcode_tilt1_small.jpg",
+    ],
+    deps = [
+        ":qr_locate",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "qr_locate_utils",
     srcs = ["qr_locate_utils.cc"],
