@@ -1,8 +1,22 @@
 cc_binary(
     name = "spin",
-    srcs = [ "spin.cc" ],
+    srcs = ["spin.cc"],
     deps = [
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
+    ],
+)
+
+cc_binary(
+    name = "runs",
+    srcs = ["runs.cc"],
+    deps = [
+        "//qrcode:pixel_iterator",
+        "//qrcode:runner",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/types:optional",
+        "@opencv",
     ],
 )
