@@ -61,7 +61,7 @@ cc_test(
     size = "small",
     srcs = ["qr_locate_test.cc"],
     data = [
-        ":testdata/qrcode_tilt1_small.jpg",
+        ":testdata/tilt.png",
     ],
     deps = [
         ":qr_locate",

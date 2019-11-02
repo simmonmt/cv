@@ -10,17 +10,13 @@ using ::testing::DoubleNear;
 using ::testing::Eq;
 using ::testing::VariantWith;
 
-constexpr char kTestImageRelPath[] = "qrcode/testdata/qrcode_tilt1_small.jpg";
+constexpr char kTestImageRelPath[] = "qrcode/testdata/tilt.png";
 
 TEST(LocateCodeTest, Test) {
-  cv::Mat input = cv::imread(kTestImageRelPath, cv::IMREAD_COLOR);
-  ASSERT_TRUE(input.data != nullptr);
+  cv::Mat image = cv::imread(kTestImageRelPath, cv::IMREAD_GRAYSCALE);
+  ASSERT_TRUE(image.data != nullptr);
 
-  cv::Mat gray, out;
-  cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
-  cv::threshold(gray, out, 127, 255, cv::THRESH_BINARY);
-
-  auto result = LocateCode(out);
+  auto result = LocateCode(image);
   ASSERT_THAT(result, VariantWith<std::unique_ptr<LocatedCode>>(_));
   std::unique_ptr<LocatedCode> located_code =
       std::move(absl::get<std::unique_ptr<LocatedCode>>(result));

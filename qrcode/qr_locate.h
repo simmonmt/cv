@@ -16,8 +16,7 @@ struct LocatedCode {
   double rotation_angle;
 };
 
-// Attempts to locate a single QR code in an image. Returns a string error
-// message if no QR code can be found.
+// Attempts to locate a single QR code in a black-and-white image.
 absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
     cv::Mat image);
 
