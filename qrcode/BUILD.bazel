@@ -6,6 +6,7 @@ cc_binary(
     deps = [
         ":debug_image",
         ":point",
+        ":qr_extract",
         ":qr_locate",
         ":qr_types",
         ":runner",

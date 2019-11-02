@@ -11,6 +11,7 @@
 
 #include "qrcode/debug_image.h"
 #include "qrcode/point.h"
+#include "qrcode/qr_extract.h"
 #include "qrcode/qr_locate.h"
 #include "qrcode/qr_types.h"
 #include "qrcode/runner.h"
@@ -29,6 +30,9 @@ int readBwImage(const std::string& path, cv::OutputArray out) {
 
   cv::Mat gray;
   cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
+
+  // NOTE: This needs to use the same threshold as the threshold()
+  // call in ExtractCode, which is awkward.
   cv::threshold(gray, out, 127, 255, cv::THRESH_BINARY);
 
   return 0;
@@ -63,7 +67,7 @@ int main(int argc, char** argv) {
 
   auto maybe_located_code = LocateCode(image);
   if (absl::holds_alternative<std::string>(maybe_located_code)) {
-    std::cerr << "failed to located code: "
+    std::cerr << "failed to locate code: "
               << absl::get<std::string>(maybe_located_code);
     return -1;
   }
@@ -71,19 +75,21 @@ int main(int argc, char** argv) {
   std::unique_ptr<LocatedCode> located_code =
       std::move(absl::get<std::unique_ptr<LocatedCode>>(maybe_located_code));
 
-  cv::Mat rotation_matrix = cv::getRotationMatrix2D(
-      cv::Point2f(located_code->center.x, located_code->center.y),
-      -located_code->rotation_angle, 1.0);
+  auto maybe_extracted_code = ExtractCode(image, *located_code);
+  if (absl::holds_alternative<std::string>(maybe_extracted_code)) {
+    std::cerr << "failed to extract code: "
+              << absl::get<std::string>(maybe_extracted_code);
+    return -1;
+  }
 
-  cv::Mat rotated_image;
-  cv::warpAffine(image, rotated_image, rotation_matrix,
-                 {image.cols, image.rows});
+  std::unique_ptr<QRCode> extracted_code =
+      std::move(absl::get<std::unique_ptr<QRCode>>(maybe_extracted_code));
 
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
     // cv::imshow(kWindowName, debug_image->Mat());
-    cv::imshow(kWindowName, rotated_image);
+    cv::imshow(kWindowName, extracted_code->image);
     cv::waitKey(0);
   }
 
