@@ -145,6 +145,7 @@ cc_library(
         ":point",
         ":qr_locate",
         ":qr_types",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/types:variant",
         "@opencv",
     ],

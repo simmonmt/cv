@@ -17,6 +17,6 @@ struct QRCode {
 };
 
 absl::variant<std::unique_ptr<QRCode>, std::string> ExtractCode(
-    cv::Mat image, const LocatedCode* located_code);
+    cv::Mat image, const LocatedCode& located_code);
 
 #endif  // _QRCODE_QR_EXTRACT_H_
