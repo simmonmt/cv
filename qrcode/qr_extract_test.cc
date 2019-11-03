@@ -20,12 +20,10 @@ TEST(ExtractCodeTest, Test) {
   std::unique_ptr<LocatedCode> located_code =
       std::move(absl::get<std::unique_ptr<LocatedCode>>(LocateCode(image)));
 
-  const Point expected_center(1105, 1109);
-
   // If this fails, the output of LocateCode has changed, which means
-  // assertion failures from ExtractCode are likely the fault of
-  // LocateCode changes -- not problems with ExtractCode.
-  ASSERT_THAT(located_code->center, Eq(expected_center));
+  // assertion failures from ExtractCode results are likely the fault
+  // of LocateCode changes -- not problems with ExtractCode.
+  ASSERT_THAT(located_code->center, Eq(Point(1105, 1109)));
 
   auto extract_result = ExtractCode(image, *located_code);
   ASSERT_THAT(extract_result, VariantWith<std::unique_ptr<QRCode>>(_));
@@ -33,14 +31,15 @@ TEST(ExtractCodeTest, Test) {
       std::move(absl::get<std::unique_ptr<QRCode>>(extract_result));
 
   PositioningPoints expected_points = {
-      {679, 683},
-      {1530, 675},
-      {679, 1540},
+      {669, 683},
+      {1526, 677},
+      {672, 1542},
   };
   EXPECT_THAT(qr_code->positioning_points, Eq(expected_points));
 
-  // The center shouldn't move
-  EXPECT_THAT(qr_code->center, Eq(expected_center));
+  // The center moves, not because of the rotation, but because ExtractCode
+  // recenters the positioning points.
+  EXPECT_THAT(qr_code->center, Eq(Point(1099, 1110)));
 }
 
 }  // namespace
