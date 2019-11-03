@@ -3,33 +3,13 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "qrcode/testutils.h"
+
 namespace {
 
 using ::testing::ElementsAre;
-using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Optional;
-
-std::vector<unsigned char> MakeRun(std::vector<int> lens) {
-  // std::vector<unsigned char> out;
-  // for (int i = 0; i < 10; ++i) {
-  //   out.push_back(i);
-  // }
-  // return out;
-
-  std::vector<unsigned char> out;
-  for (int i = 0; i < lens.size(); ++i) {
-    const int len = lens[i];
-    std::vector<unsigned char> run(len, (i % 2 == 0) ? 255 : 0);
-    out.insert(out.end(), run.begin(), run.end());
-  }
-  return out;
-}
-
-TEST(MakeRunTest, Test) {
-  auto out = MakeRun({1, 2, 0, 1, 4});
-  EXPECT_THAT(out, ElementsAreArray({255, 0, 0, 0, 255, 255, 255, 255}));
-}
 
 class RunnerTest : public ::testing::Test {};
 

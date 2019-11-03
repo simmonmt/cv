@@ -37,6 +37,7 @@ cc_test(
     srcs = ["runner_test.cc"],
     deps = [
         ":runner",
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -161,6 +162,23 @@ cc_test(
     ],
     deps = [
         ":qr_extract",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "testutils",
+    testonly = 1,
+    srcs = ["testutils.cc"],
+    hdrs = ["testutils.h"],
+)
+
+cc_test(
+    name = "testutils_test",
+    size = "small",
+    srcs = ["testutils_test.cc"],
+    deps = [
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )
