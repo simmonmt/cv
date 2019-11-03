@@ -8,7 +8,7 @@
 #include "qrcode/qr_utils.h"
 #include "qrcode/runner.h"
 
-absl::variant<std::unique_ptr<QRCode>, std::string> ExtractCode(
+absl::variant<std::unique_ptr<QRImage>, std::string> NormalizeCode(
     cv::Mat image, const LocatedCode& located_code) {
   cv::Mat rotation_matrix = cv::getRotationMatrix2D(
       cv::Point2f(located_code.center.x, located_code.center.y),
@@ -45,7 +45,7 @@ absl::variant<std::unique_ptr<QRCode>, std::string> ExtractCode(
   points.top_right = update_point(points.top_right);
   points.bottom_left = update_point(points.bottom_left);
 
-  auto qr_code = absl::make_unique<QRCode>();
+  auto qr_code = absl::make_unique<QRImage>();
   qr_code->image = rotated_image;
   qr_code->positioning_points = points;
   qr_code->center = CalculateCodeCenter(points);

@@ -75,21 +75,21 @@ int main(int argc, char** argv) {
   std::unique_ptr<LocatedCode> located_code =
       std::move(absl::get<std::unique_ptr<LocatedCode>>(maybe_located_code));
 
-  auto maybe_extracted_code = ExtractCode(image, *located_code);
-  if (absl::holds_alternative<std::string>(maybe_extracted_code)) {
+  auto maybe_qr_image = NormalizeCode(image, *located_code);
+  if (absl::holds_alternative<std::string>(maybe_qr_image)) {
     std::cerr << "failed to extract code: "
-              << absl::get<std::string>(maybe_extracted_code);
+              << absl::get<std::string>(maybe_qr_image);
     return -1;
   }
 
-  std::unique_ptr<QRCode> extracted_code =
-      std::move(absl::get<std::unique_ptr<QRCode>>(maybe_extracted_code));
+  std::unique_ptr<QRImage> qr_image =
+      std::move(absl::get<std::unique_ptr<QRImage>>(maybe_qr_image));
 
   if (absl::GetFlag(FLAGS_display)) {
     constexpr char kWindowName[] = "Output";
     cv::namedWindow(kWindowName, cv::WINDOW_NORMAL);
     // cv::imshow(kWindowName, debug_image->Mat());
-    cv::imshow(kWindowName, extracted_code->image);
+    cv::imshow(kWindowName, qr_image->image);
     cv::waitKey(0);
   }
 
