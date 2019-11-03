@@ -51,6 +51,7 @@ cc_library(
         ":point",
         ":qr_locate_utils",
         ":qr_types",
+        ":qr_utils",
         ":runner",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -163,6 +164,24 @@ cc_test(
     ],
     deps = [
         ":qr_extract",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "qr_utils",
+    srcs = ["qr_utils.cc"],
+    hdrs = ["qr_utils.h"],
+    deps = [":qr_types"],
+)
+
+cc_test(
+    name = "qr_utils_test",
+    size = "small",
+    srcs = ["qr_utils_test.cc"],
+    deps = [
+        ":qr_utils",
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )

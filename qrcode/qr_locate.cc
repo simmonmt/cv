@@ -10,6 +10,7 @@
 
 #include "qrcode/pixel_iterator.h"
 #include "qrcode/qr_locate_utils.h"
+#include "qrcode/qr_utils.h"
 #include "qrcode/runner.h"
 
 absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
