@@ -94,6 +94,7 @@ cc_test(
     srcs = ["qr_locate_utils_test.cc"],
     deps = [
         ":qr_locate",
+        ":testutils",
         "@com_google_absl//absl/base",
         "@com_google_googletest//:gtest_main",
     ],
@@ -171,6 +172,7 @@ cc_library(
     testonly = 1,
     srcs = ["testutils.cc"],
     hdrs = ["testutils.h"],
+    deps = [":qr_types"],
 )
 
 cc_test(

@@ -1,11 +1,10 @@
 #include "qrcode/qr_locate_utils.h"
 
-#include <math.h>
-#include <cmath>
-
 #include "absl/base/macros.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+
+#include "qrcode/testutils.h"
 
 namespace {
 
@@ -25,41 +24,6 @@ PositioningPoints MakePositioningPoints(const Point& top_left,
   pp.top_right = top_right;
   pp.bottom_left = bottom_left;
   return pp;
-}
-
-// Returns a set of positioning points at all angles.
-//
-// Given a center and a radius, this function will construct a series of
-// positioning points, each of which are at a different rotation relative to the
-// center. The returned points will represent ~all possible orientations of
-// positioning points.
-//
-// NOTE: radius must not be greater than center.x or center.y.
-std::vector<PositioningPoints> MakeRotatedPositioningPoints(const Point& center,
-                                                            double radius) {
-  const int kNumSteps = 360;
-
-  std::vector<PositioningPoints> out;
-  for (int i = 0; i < kNumSteps; ++i) {
-    double inc = (M_PI * 2) * (static_cast<double>(i) / kNumSteps);
-
-    PositioningPoints points;
-    std::vector<Point*> pp = {&points.bottom_left, &points.top_left,
-                              &points.top_right};
-    static const std::vector<double> kThetas = {inc + M_PI, inc + M_PI_2, inc};
-
-    for (int i = 0; i < pp.size(); ++i) {
-      const double theta = kThetas[i];
-      Point* point = pp[i];
-
-      point->x = std::sin(theta) * radius + center.x;
-      point->y = std::cos(theta) * radius + center.y;
-    }
-
-    out.push_back(points);
-  }
-
-  return out;
 }
 
 TEST(IsPositioningBlockTest, Test) {
