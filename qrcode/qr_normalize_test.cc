@@ -1,4 +1,4 @@
-#include "qrcode/qr_extract.h"
+#include "qrcode/qr_normalize.h"
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"

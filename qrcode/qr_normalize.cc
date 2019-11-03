@@ -1,4 +1,4 @@
-#include "qrcode/qr_extract.h"
+#include "qrcode/qr_normalize.h"
 
 #include "absl/memory/memory.h"
 #include "absl/types/optional.h"

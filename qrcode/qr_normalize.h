@@ -1,5 +1,5 @@
-#ifndef _QRCODE_QR_EXTRACT_H_
-#define _QRCODE_QR_EXTRACT_H_ 1
+#ifndef _QRCODE_QR_NORMALIZE_H_
+#define _QRCODE_QR_NORMALIZE_H_ 1
 
 #include "absl/types/variant.h"
 #include "opencv2/opencv.hpp"
@@ -19,4 +19,4 @@ struct QRImage {
 absl::variant<std::unique_ptr<QRImage>, std::string> NormalizeCode(
     cv::Mat image, const LocatedCode& located_code);
 
-#endif  // _QRCODE_QR_EXTRACT_H_
+#endif  // _QRCODE_QR_NORMALIZE_H_

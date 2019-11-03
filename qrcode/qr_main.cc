@@ -11,8 +11,8 @@
 
 #include "qrcode/debug_image.h"
 #include "qrcode/point.h"
-#include "qrcode/qr_extract.h"
 #include "qrcode/qr_locate.h"
+#include "qrcode/qr_normalize.h"
 #include "qrcode/qr_types.h"
 #include "qrcode/runner.h"
 
