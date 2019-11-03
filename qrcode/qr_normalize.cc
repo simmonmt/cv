@@ -4,7 +4,7 @@
 #include "absl/types/optional.h"
 
 #include "qrcode/pixel_iterator.h"
-#include "qrcode/qr_extract_utils.h"
+#include "qrcode/qr_normalize_utils.h"
 #include "qrcode/qr_utils.h"
 #include "qrcode/runner.h"
 

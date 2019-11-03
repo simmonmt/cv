@@ -1,5 +1,5 @@
-#ifndef _QRCODE_QR_EXTRACT_UTILS_H_
-#define _QRCODE_QR_EXTRACT_UTILS_H_ 1
+#ifndef _QRCODE_QR_NORMALIZE_UTILS_H_
+#define _QRCODE_QR_NORMALIZE_UTILS_H_ 1
 
 #include "qrcode/pixel_iterator.h"
 #include "qrcode/qr_types.h"
@@ -11,4 +11,4 @@
 Point RecenterPositioningPoint(const Point& point,
                                PixelIterator<const unsigned char> iter);
 
-#endif  // _QRCODE_QR_EXTRACT_UTILS_H_
+#endif  // _QRCODE_QR_NORMALIZE_UTILS_H_
