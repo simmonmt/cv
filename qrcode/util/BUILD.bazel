@@ -12,6 +12,7 @@ cc_binary(
     srcs = ["runs.cc"],
     deps = [
         "//qrcode:pixel_iterator",
+        "//qrcode:qr_types",
         "//qrcode:runner",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",

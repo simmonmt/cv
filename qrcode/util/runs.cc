@@ -11,6 +11,7 @@
 #include "opencv2/opencv.hpp"
 
 #include "qrcode/pixel_iterator.h"
+#include "qrcode/qr_types.h"
 #include "qrcode/runner.h"
 
 ABSL_FLAG(std::string, input, "", "input file");
@@ -34,7 +35,7 @@ int main(int argc, char** argv) {
   for (int row = 0; row < image.rows; ++row) {
     std::cout << row << " ";
 
-    iter.SeekRowCol(row, 0);
+    iter.Seek(Point(0, row));
     auto result = Runner(iter.MakeForwardColumnIterator())
                       .Next(absl::GetFlag(FLAGS_num), nullptr);
     if (!result.has_value()) {
