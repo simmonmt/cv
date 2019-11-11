@@ -30,35 +30,29 @@ template <class T>
 class PixelIterator {
  public:
   PixelIterator(T* data, int width, int height)
-      : row_(0),
-        col_(0),
-        cur_(0),
-        width_(width),
-        height_(height),
-        data_(data) {}
+      : x_(0), y_(0), cur_(0), width_(width), height_(height), data_(data) {}
   virtual ~PixelIterator() = default;
 
-  bool SeekRowCol(int row, int col) {
-    if (row < 0 || row >= height_) {
+  bool Seek(int x, int y) {
+    if (y < 0 || y >= height_) {
       return false;
     }
 
-    if (col < 0 || col >= width_) {
+    if (x < 0 || x >= width_) {
       return false;
     }
 
-    row_ = row;
-    col_ = col;
-    cur_ = row_ * width_ + col_;
+    y_ = y;
+    x_ = x;
+    cur_ = y_ * width_ + x_;
     return true;
   }
 
   bool RelSeek(int delta_x, int delta_y) {
-    return SeekRowCol(row_ + delta_y, col_ + delta_x);
+    return Seek(x_ + delta_x, y_ + delta_y);
   }
 
-  bool Seek(Point p) { return SeekRowCol(p.y, p.x); }
-  bool Seek(int x, int y) { return SeekRowCol(y, x); }
+  bool Seek(Point p) { return Seek(p.x, p.y); }
 
   T Get() { return data_[cur_]; }
 
@@ -76,7 +70,7 @@ class PixelIterator {
   }
 
  private:
-  int row_, col_, cur_;
+  int x_, y_, cur_;
   int width_, height_;
   const T* data_;
 };
