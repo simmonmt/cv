@@ -43,6 +43,14 @@ TEST_F(RunnerTest, Test) {
   // Make sure we can call it without an index pointer.
   result = runner.Next(7, nullptr);
   ASSERT_THAT(result, Optional(ElementsAre(1, 2, 3, 4, 5, 6, 7)));
+
+  // Make sure we can get the last run -- the one that doesn't have
+  // anything to the right. Start by skipping to the end.
+  for (int i = 2; i <= 9; i++) {
+    runner.Next(1, nullptr);
+  }
+  result = runner.Next(1, nullptr);
+  ASSERT_THAT(result, Optional(ElementsAre(10)));
 }
 
 }  // namespace
