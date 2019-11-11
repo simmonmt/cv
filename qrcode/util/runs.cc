@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  PixelIterator<const uchar> iter(image.ptr<uchar>(0), image.cols, image.rows);
+  PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(image);
   for (int row = 0; row < image.rows; ++row) {
     std::cout << row << " ";
 

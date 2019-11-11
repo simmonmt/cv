@@ -1,6 +1,10 @@
 #ifndef _QRCODE_PIXEL_ITERATOR_
 #define _QRCODE_PIXEL_ITERATOR_ 1
 
+namespace cv {
+class Mat;
+}  // namespace cv
+
 template <class T>
 class PixelIterator;
 
@@ -71,5 +75,8 @@ class PixelIterator {
   int width_, height_;
   const T* data_;
 };
+
+PixelIterator<const unsigned char> PixelIteratorFromGrayImage(
+    const cv::Mat& image);
 
 #endif  // _QRCODE_PIXEL_ITERATOR_

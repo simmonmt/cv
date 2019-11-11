@@ -23,8 +23,8 @@ absl::variant<std::unique_ptr<QRImage>, std::string> NormalizeCode(
   // qr_main.cc, which is awkward.
   cv::threshold(rotated_image, rotated_image, 127, 255, cv::THRESH_BINARY);
 
-  PixelIterator<const unsigned char> iter(
-      rotated_image.ptr<uchar>(0), rotated_image.cols, rotated_image.rows);
+  PixelIterator<const unsigned char> iter =
+      PixelIteratorFromGrayImage(rotated_image);
 
   // The positioning points in located_code are pre-rotation. First we transform
   // them using the rotation matrix so we know where they are post-rotation.

@@ -103,7 +103,11 @@ cc_test(
 
 cc_library(
     name = "pixel_iterator",
+    srcs = ["pixel_iterator.cc"],
     hdrs = ["pixel_iterator.h"],
+    deps = [
+        "@opencv",
+    ],
 )
 
 cc_test(

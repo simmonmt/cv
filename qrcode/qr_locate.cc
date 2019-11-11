@@ -15,8 +15,7 @@
 
 absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
     cv::Mat image) {
-  PixelIterator<const uchar> image_iter(image.ptr<uchar>(0), image.cols,
-                                        image.rows);
+  PixelIterator<const uchar> image_iter = PixelIteratorFromGrayImage(image);
   std::vector<Point> candidates;
   for (int row = 0; row < image.rows; ++row) {
     auto row_candidates = FindPositioningPointCandidatesInRow(&image_iter, row);
