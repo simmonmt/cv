@@ -13,7 +13,7 @@ Point RecenterPositioningPoint(const Point& point,
     }
   };
 
-  iter.SeekRowCol(point.y, point.x);
+  iter.Seek(point);
   int left_margin = measure(iter.MakeReverseColumnIterator());
   int right_margin = measure(iter.MakeForwardColumnIterator());
   int top_margin = measure(iter.MakeReverseRowIterator());
