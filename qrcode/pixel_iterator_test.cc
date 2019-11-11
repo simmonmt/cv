@@ -44,6 +44,8 @@ TEST_F(PixelIteratorTest, Movement) {
 
   ASSERT_TRUE(iter_.Seek(Point(4, 3)));
   EXPECT_EQ(20, iter_.Get());
+  ASSERT_TRUE(iter_.Seek(4, 3));
+  EXPECT_EQ(20, iter_.Get());
 
   EXPECT_FALSE(iter_.RelSeek(0, 1));
   EXPECT_FALSE(iter_.RelSeek(1, 0));

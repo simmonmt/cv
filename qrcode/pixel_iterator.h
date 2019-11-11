@@ -58,6 +58,7 @@ class PixelIterator {
   }
 
   bool Seek(Point p) { return SeekRowCol(p.y, p.x); }
+  bool Seek(int x, int y) { return SeekRowCol(y, x); }
 
   T Get() { return data_[cur_]; }
 
