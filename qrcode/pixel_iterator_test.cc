@@ -30,47 +30,47 @@ class PixelIteratorTest : public ::testing::Test {
 };
 
 TEST_F(PixelIteratorTest, Movement) {
-  EXPECT_FALSE(iter_.SeekRowCol(-1, 0));
-  EXPECT_FALSE(iter_.SeekRowCol(0, -1));
-  EXPECT_FALSE(iter_.SeekRowCol(-1, -1));
+  EXPECT_FALSE(iter_.Seek(Point(0, -1)));
+  EXPECT_FALSE(iter_.Seek(Point(-1, 0)));
+  EXPECT_FALSE(iter_.Seek(Point(-1, -1)));
 
-  ASSERT_TRUE(iter_.SeekRowCol(0, 0));
+  ASSERT_TRUE(iter_.Seek(Point(0, 0)));
   EXPECT_EQ(1, iter_.Get());
 
-  EXPECT_FALSE(iter_.RelSeekRowCol(-1, 0));
-  EXPECT_FALSE(iter_.RelSeekRowCol(0, -1));
-  EXPECT_FALSE(iter_.RelSeekRowCol(-1, -1));
+  EXPECT_FALSE(iter_.RelSeek(0, -1));
+  EXPECT_FALSE(iter_.RelSeek(-1, 0));
+  EXPECT_FALSE(iter_.RelSeek(-1, -1));
   EXPECT_EQ(1, iter_.Get());
 
-  ASSERT_TRUE(iter_.SeekRowCol(3, 4));
+  ASSERT_TRUE(iter_.Seek(Point(4, 3)));
   EXPECT_EQ(20, iter_.Get());
 
-  EXPECT_FALSE(iter_.RelSeekRowCol(1, 0));
-  EXPECT_FALSE(iter_.RelSeekRowCol(0, 1));
-  EXPECT_FALSE(iter_.RelSeekRowCol(1, 1));
+  EXPECT_FALSE(iter_.RelSeek(0, 1));
+  EXPECT_FALSE(iter_.RelSeek(1, 0));
+  EXPECT_FALSE(iter_.RelSeek(1, 1));
   EXPECT_EQ(20, iter_.Get());
 
   ASSERT_TRUE(iter_.Seek(Point(4, 3)));
   EXPECT_EQ(20, iter_.Get());
 
-  ASSERT_TRUE(iter_.SeekRowCol(2, 2));
+  ASSERT_TRUE(iter_.Seek(Point(2, 2)));
   EXPECT_EQ(13, iter_.Get());
-  ASSERT_TRUE(iter_.RelSeekRowCol(-2, 0));
+  ASSERT_TRUE(iter_.RelSeek(0, -2));
   EXPECT_EQ(3, iter_.Get());
-  ASSERT_TRUE(iter_.RelSeekRowCol(3, 0));
+  ASSERT_TRUE(iter_.RelSeek(0, 3));
   EXPECT_EQ(18, iter_.Get());
-  ASSERT_TRUE(iter_.RelSeekRowCol(0, -1));
+  ASSERT_TRUE(iter_.RelSeek(-1, 0));
   EXPECT_EQ(17, iter_.Get());
-  ASSERT_TRUE(iter_.RelSeekRowCol(0, 2));
+  ASSERT_TRUE(iter_.RelSeek(2, 0));
   EXPECT_EQ(19, iter_.Get());
 }
 
 TEST_F(PixelIteratorTest, DirectionalIterator) {
-  ASSERT_TRUE(iter_.SeekRowCol(1, 1));
+  ASSERT_TRUE(iter_.Seek(Point(1, 1)));
   EXPECT_THAT(GetAll(iter_.MakeForwardRowIterator()), ElementsAre(12, 17));
   EXPECT_THAT(GetAll(iter_.MakeForwardColumnIterator()), ElementsAre(8, 9, 10));
 
-  ASSERT_TRUE(iter_.SeekRowCol(2, 2));
+  ASSERT_TRUE(iter_.Seek(Point(2, 2)));
   EXPECT_THAT(GetAll(iter_.MakeReverseRowIterator()), ElementsAre(8, 3));
   EXPECT_THAT(GetAll(iter_.MakeReverseColumnIterator()), ElementsAre(12, 11));
 }

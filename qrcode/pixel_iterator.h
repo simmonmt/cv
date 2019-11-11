@@ -17,7 +17,7 @@ class DirectionalIterator {
       : iter_(iter), row_delta_(row_delta), col_delta_(col_delta) {}
   virtual ~DirectionalIterator() = default;
 
-  bool Next() { return iter_.RelSeekRowCol(row_delta_, col_delta_); }
+  bool Next() { return iter_.RelSeek(col_delta_, row_delta_); }
 
   T Get() { return iter_.Get(); }
 
@@ -53,8 +53,8 @@ class PixelIterator {
     return true;
   }
 
-  bool RelSeekRowCol(int row, int col) {
-    return SeekRowCol(row_ + row, col_ + col);
+  bool RelSeek(int delta_x, int delta_y) {
+    return SeekRowCol(row_ + delta_y, col_ + delta_x);
   }
 
   bool Seek(Point p) { return SeekRowCol(p.y, p.x); }
