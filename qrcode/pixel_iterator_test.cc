@@ -3,6 +3,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "qrcode/qr_types.h"
+
 namespace {
 
 using ::testing::ElementsAre;
@@ -46,6 +48,9 @@ TEST_F(PixelIteratorTest, Movement) {
   EXPECT_FALSE(iter_.RelSeekRowCol(1, 0));
   EXPECT_FALSE(iter_.RelSeekRowCol(0, 1));
   EXPECT_FALSE(iter_.RelSeekRowCol(1, 1));
+  EXPECT_EQ(20, iter_.Get());
+
+  ASSERT_TRUE(iter_.Seek(Point(4, 3)));
   EXPECT_EQ(20, iter_.Get());
 
   ASSERT_TRUE(iter_.SeekRowCol(2, 2));

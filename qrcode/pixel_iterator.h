@@ -1,6 +1,8 @@
 #ifndef _QRCODE_PIXEL_ITERATOR_
 #define _QRCODE_PIXEL_ITERATOR_ 1
 
+#include "qrcode/qr_types.h"
+
 namespace cv {
 class Mat;
 }  // namespace cv
@@ -54,6 +56,8 @@ class PixelIterator {
   bool RelSeekRowCol(int row, int col) {
     return SeekRowCol(row_ + row, col_ + col);
   }
+
+  bool Seek(Point p) { return SeekRowCol(p.y, p.x); }
 
   T Get() { return data_[cur_]; }
 
