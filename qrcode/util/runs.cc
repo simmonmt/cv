@@ -32,10 +32,10 @@ int main(int argc, char** argv) {
   }
 
   PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(image);
-  for (int row = 0; row < image.rows; ++row) {
-    std::cout << row << " ";
+  for (int y = 0; y < image.rows; ++y) {
+    std::cout << y << " ";
 
-    iter.Seek(Point(0, row));
+    iter.Seek(0, y);
     auto result = Runner(iter.MakeForwardColumnIterator())
                       .Next(absl::GetFlag(FLAGS_num), nullptr);
     if (!result.has_value()) {

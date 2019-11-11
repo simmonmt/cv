@@ -151,7 +151,7 @@ double CalculateCodeRotationAngle(const PositioningPoints& points) {
 
 std::vector<Point> FindPositioningPointCandidatesInRow(
     PixelIterator<const unsigned char>* image_iter, int row) {
-  image_iter->Seek(Point(0, row));
+  image_iter->Seek(0, row);
 
   // If the row starts with white we need to skip the first set of
   // values returned by the runner.
@@ -180,7 +180,7 @@ std::vector<Point> FindPositioningPointCandidatesInRow(
       int center_x =
           h_start_x + left_black_width + left_white_width + center_width / 2;
 
-      image_iter->Seek(Point(center_x, row));
+      image_iter->Seek(center_x, row);
 
       // {row, center_x} is in the middle of a run of black, in the middle of a
       // series of runs that's compatible with the ratios for a positioning
