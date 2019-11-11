@@ -208,8 +208,13 @@ cc_library(
     srcs = ["qr_extract.cc"],
     hdrs = ["qr_extract.h"],
     deps = [
+        ":debug_image",
+        ":pixel_iterator",
         ":qr_normalize",
         ":qr_types",
+        ":runner",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:variant",
     ],
 )
 
