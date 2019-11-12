@@ -36,11 +36,6 @@ absl::optional<std::tuple<int, int>> GetPositioningOuterBorder(
   return std::make_tuple(off, runs[runs.size() - 1]);
 };
 
-absl::optional<std::tuple<int, int>> GetPositioningOuterBorderDown(
-    PixelIterator<const uchar> iter, const Point& center) {
-  return GetPositioningOuterBorder(iter, center, 0, 1);
-}
-
 struct Extent {
   Extent(int start, int len) : start(start), len(len) {}
 
@@ -93,35 +88,12 @@ absl::optional<std::vector<Extent>> FindPositioningPointExtents(
   };
 }
 
-}  // namespace
-
-absl::variant<std::string> ExtractCode(const QRImage& qr_image) {
+absl::variant<std::vector<int>, std::string> FindXCoords(
+    const QRImage& qr_image) {
   PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(qr_image.image);
 
-  // The timing marks are positioned as follows relative to the top
-  // left positionining mark.
-  //
-  //      XXXXXXX
-  //      X     X
-  //      X XXX X
-  //      X XXX X
-  //      X XXX X
-  //      X     X
-  //      XXXXXXX T T T T
-  //
-  //            T
-  //
-  //            T
-  //
-  // Find the top timing marks, which means first finding where they
-  // start and end (start being the last X before the horizontal T's
-  // above). Then all black runs between them are timing marks. We
-  // could also just find the start then accumulate only short timing
-  // marks, assuming that the first long one is the top right
-  // positioning mark. This seems both fiddly and fragile.
-
-  auto result =
-      GetPositioningOuterBorderDown(iter, qr_image.positioning_points.top_left);
+  auto result = GetPositioningOuterBorder(
+      iter, qr_image.positioning_points.top_left, 0, 1);
   if (!result.has_value()) {
     return "failed to find h timing y";
   }
@@ -179,12 +151,126 @@ absl::variant<std::string> ExtractCode(const QRImage& qr_image) {
     x_coords[i] = timings[i].start + timings[i].len / 2;
   }
 
-  auto debug = DebugImage::FromGray(qr_image.image);
-  for (const int x : x_coords) {
-    debug->Crosshairs(Point(x, h_timing_y));
-  }
-  cv::imwrite("/tmp/img.png", debug->Mat());
+  return x_coords;
+}
 
-  // Find horizontal timing marks end y from top right pp
+absl::variant<std::vector<int>, std::string> FindYCoords(
+    const QRImage& qr_image) {
+  PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(qr_image.image);
+
+  auto result = GetPositioningOuterBorder(
+      iter, qr_image.positioning_points.top_left, 1, 0);
+  if (!result.has_value()) {
+    return "failed to find v timing x";
+  }
+
+  int x_off, x_w;
+  std::tie(x_off, x_w) = *result;
+
+  int v_timing_x = qr_image.positioning_points.top_left.x + x_off + x_w / 2;
+
+  iter.Seek(v_timing_x, qr_image.positioning_points.top_left.y);
+  int v_timing_top_y =
+      qr_image.positioning_points.top_left.y +
+      (*Runner(iter.MakeForwardRowIterator()).Next(1, nullptr))[0];
+
+  iter.Seek(v_timing_x, qr_image.positioning_points.bottom_left.y);
+  int v_timing_bottom_y =
+      qr_image.positioning_points.bottom_left.y -
+      (*Runner(iter.MakeReverseRowIterator()).Next(1, nullptr))[0];
+
+  std::vector<Extent> timings;
+
+  iter.Seek(v_timing_x, v_timing_top_y);
+  Runner runner(iter.MakeForwardRowIterator());
+  for (int y = v_timing_top_y; y <= v_timing_bottom_y;) {
+    auto maybe_run = runner.Next(1, nullptr);
+    if (!maybe_run.has_value()) {
+      return "v timing x ran off end";
+    }
+
+    int len = (*maybe_run)[0];
+    timings.emplace_back(y, len);
+    y += len;
+  }
+
+  absl::optional<std::vector<Extent>> maybe_top_extents =
+      FindPositioningPointExtents(iter, qr_image.positioning_points.top_left,
+                                  false);
+  if (!maybe_top_extents.has_value()) {
+    return "no top left v extents";
+  }
+  timings.insert(timings.begin(), maybe_top_extents->begin(),
+                 maybe_top_extents->end());
+
+  absl::optional<std::vector<Extent>> maybe_bottom_extents =
+      FindPositioningPointExtents(iter, qr_image.positioning_points.bottom_left,
+                                  false);
+  if (!maybe_bottom_extents.has_value()) {
+    return "no bottom left v extents";
+  }
+  timings.insert(timings.end(), maybe_bottom_extents->begin(),
+                 maybe_bottom_extents->end());
+
+  std::vector<int> y_coords(timings.size());
+  for (int i = 0; i < timings.size(); ++i) {
+    y_coords[i] = timings[i].start + timings[i].len / 2;
+  }
+
+  return y_coords;
+}
+
+}  // namespace
+
+absl::variant<std::string> ExtractCode(const QRImage& qr_image) {
+  // The timing marks are positioned as follows relative to the top
+  // left positionining mark.
+  //
+  //      XXXXXXX
+  //      X     X
+  //      X XXX X
+  //      X XXX X
+  //      X XXX X
+  //      X     X
+  //      XXXXXXX T T T T
+  //
+  //            T
+  //
+  //            T
+  //
+  // Find the top timing marks, which means first finding where they
+  // start and end (start being the last X before the horizontal T's
+  // above). Then all black runs between them are timing marks. We
+  // could also just find the start then accumulate only short timing
+  // marks, assuming that the first long one is the top right
+  // positioning mark. This seems both fiddly and fragile.
+
+  auto maybe_x_coords = FindXCoords(qr_image);
+  if (absl::holds_alternative<std::string>(maybe_x_coords)) {
+    return "x coords fail: " + absl::get<std::string>(maybe_x_coords);
+  }
+  const std::vector<int> x_coords =
+      std::move(absl::get<std::vector<int>>(maybe_x_coords));
+
+  auto maybe_y_coords = FindYCoords(qr_image);
+  if (absl::holds_alternative<std::string>(maybe_y_coords)) {
+    return "y coords fail: " + absl::get<std::string>(maybe_y_coords);
+  }
+  const std::vector<int> y_coords =
+      std::move(absl::get<std::vector<int>>(maybe_y_coords));
+
+  PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(qr_image.image);
+  for (int y = 0; y < y_coords.size(); ++y) {
+    for (int x = 0; x < x_coords.size(); ++x) {
+      iter.Seek(x_coords[x], y_coords[y]);
+      if (iter.Get() == 0) {
+        std::cout << ".";
+      } else {
+        std::cout << "X";
+      }
+    }
+    std::cout << "\n";
+  }
+
   return "";
 }
