@@ -21,3 +21,8 @@ cc_binary(
         "@opencv",
     ],
 )
+
+cc_binary(
+    name = "bch3",
+    srcs = ["bch3.c"],
+)
