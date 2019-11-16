@@ -1,0 +1,142 @@
+## Decoding the function field
+
+https://en.wikipedia.org/wiki/Finite_field#GF(16)
+GF(2^4) == GF(16)?
+GF(2^4) has order 4
+ - A finite field of order q exists if and only if the order q is a
+   prime power p^k
+ - ... and 2 is prime
+ - In a field of order pk, adding p copies of any element always
+   results in zero
+ - the elements of GF(16) may be represented by expressions
+   a + b\alpha + c\alpha^2 + d\alpha^3
+   where a, b, c, d are 0 or 1
+ - Irreducible polynomial (bch3's p) is X^4 + X + 1
+
+is k the same as m? yes
+
+bch3 dumping generate_gf for m=4, length=15:
+
+     index  value?
+alpha_to(0)=1
+alpha_to(1)=2
+alpha_to(2)=4   <--- primitive element
+alpha_to(3)=8
+alpha_to(4)=3
+alpha_to(5)=6
+alpha_to(6)=12
+alpha_to(7)=11
+alpha_to(8)=5
+alpha_to(9)=10
+alpha_to(10)=7
+alpha_to(11)=14
+alpha_to(12)=15
+alpha_to(13)=13
+alpha_to(14)=9
+index_of goes the other way [8] = 3
+
+comment says alpha_to[i] contains j=alpha^i
+
+        abcd
+i=0 = 0b0001 = 1
+i=1 = 0b0010 = alpha
+i=2 = 0x0100 = alpha^2
+i=3 = 0x1000 = alpha^3
+i=4 = 0x0011 = alpha^4 = alpha + 1
+i=5 = 0x0110 = alpha^5 = alpha^2 + alpha
+
+for i=4
+  alpha^4 = alpha^3 * alpha => d * f => 1 + alpha => 0011
+for i=15
+  alpha^15 =
+  alpha^14 * alpha =
+  (a,d) * f =
+  (af+df)*alpha + df =
+  0 + df =
+  1  <-- it loops back on itself
+
+so mod 15 when searching alpha_to.
+
+Multiplication in GF(2^4):
+
+  a,b,c,d * e,f,g,h
+
+(ae+bh+cg+df)+
+(af+be+bh+cg+df+ch+dg)\alpha +
+(ag+bf+ce+ch+dg+dh)\alpha^2 +
+(ah+bg+cf+de+dh)\alpha^3
+
+wiki decoding example with 2 errors
+1 0 0 1 1 1 0 0 0 1 1 0 1 0 0 (MSB first)
+
+S1:
+x^14 + x^11 + x^10 + x^9 + x^5 + x^4 + x^2
+1001 + 1110 + 0111 + 1010+ 0110+ 0011+ 0100
+
+Add and mod the digits individually because they're secretly
+polynomials.
+
+1001 + 1110 + 0111 + 1010+ 0110+ 0011+ 0100
+1001 + 1110 + 0111 + 1010+ 0110+ 0111
+1001 + 1110 + 0111 + 1010+ 0001
+1001 + 1110 + 0111 + 1011
+1001 + 1110 + 1100
+1001 + 0010
+1011
+
+0001011=>1
+1010110=>0
+0111110=>1
+0100101=>1
+
+S3: (uses alpha^3)
+x^42 + x^33 + x^30 + x^27 + x^15 + x^12 + x^6
+x^12 + x^3  + x^0  + x^12 + x^0  + x^12 + x^6   (mod 15)
+1111   1000   0001   1111   0001   1111   1100
+
+1101011=>1
+1001011=>0
+1001010=>1
+1011110=>1
+
+wiki decoding example with 0 errors
+1 1 0 1 1 1 0 0 0 0 1 0 1 0 0
+
+S1:
+14   13   11   10   9    4    2
+1001 1101 1110 0111 1010 0011 0100
+
+1110100 0
+0111001 0
+0011110 0
+1101010 0
+
+000000000011111
+012345678901234
+101010000010010
+
+R(x) = 1+x^2+x^4+x^10+x^13
+
+S1 = R(a)                                           (1)
+S3 = R(a^3)                                         (2)
+S5 = R(a^5)                                         (3)
+
+d1 = -S1                                            (4)
+
+S3 + S2*d1 + S1*d2 + d3 = 0
+S3 + S1^2*d1 + S1*d2 + d3 = 0
+S3 + -S1^3 + S1*d2 + d3 = 0
+d3 = -(S3 + -S1^3 + S1*d2)
+d3 = -S3 + S1^3 - s1*d2                             (6)
+
+S5 + S4*d1 + S3*d2 + S2*d3 = 0
+S5 + S1^4*d1 + S3*d2 + S1^2*d3 = 0
+S5 - S1^5 + S3*d2 + S1^2*d3 = 0
+S3*d2 = -S5 + S1^5 - S1^2*d3
+S3*d2 = -S5 + S1^5 - S1^2*(-S3 + S1^3 - S1*d2)
+S3*d2 = -S5 + S1^5 + S3*S1^2 - S1^5 + S1^3*d2
+S3*d2 - S1^3*d2 = -S5 + S1^5 + S3*S1^2 - S1^5
+(S3 - S1^3)*d2 = -S5 + S1^5 + S3*S1^2 - S1^5
+d2 = (-S5 + S1^5 + S3*S1^2 - S1^5)/(S3 - S1^3)      (5)
+
+for each a 0000 .. 1111 do

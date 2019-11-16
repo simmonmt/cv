@@ -1,0 +1,6 @@
+#ifndef _QRCODE_QR_EXTRACT_UTILS_H_
+#define _QRCODE_QR_EXTRACT_UTILS_H_ 1
+
+void Calc();
+
+#endif  // _QRCODE_QR_EXTRACT_UTILS_H_
