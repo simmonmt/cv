@@ -57,15 +57,19 @@ class Calc {
   // input has 15 bits, MSB (x^14) first.
   Calc(const std::vector<bool>& input) : input_(input){};
 
-  unsigned char add_bits(unsigned char a, unsigned char b) { return a ^ b; }
+  static unsigned char add(unsigned char a, unsigned char b) { return a ^ b; }
 
-  unsigned char r(int alpha_power) {
+  static unsigned char square(unsigned char a) {
+    return kGFBits[(kGFIndexes[a] * 2) % 15];
+  }
+
+  unsigned char r(int alpha_power) const {
     unsigned char out_bits = 0;
     for (int i = input_.size() - 1; i >= 0; --i) {
       if (input_[i]) {
         const int i_power = ((14 - i) * alpha_power) % 15;
         const unsigned char to_add = kGFBits[i_power];
-        out_bits = add_bits(out_bits, to_add);
+        out_bits = add(out_bits, to_add);
       }
     }
     return out_bits;
@@ -75,6 +79,7 @@ class Calc {
 };
 
 constexpr unsigned char Calc::kGFBits[15];
+constexpr unsigned char Calc::kGFIndexes[16];
 
 class CalcTest : public ::testing::Test {
  public:
@@ -102,6 +107,49 @@ TEST_F(CalcTest, R) {
     EXPECT_EQ(b0000, calc_no_errors_.r(3));
     EXPECT_EQ(b0000, calc_no_errors_.r(5));
   }
+}
+
+TEST_F(CalcTest, add) {
+  EXPECT_EQ(b0000, Calc::add(b0000, b0000));
+  EXPECT_EQ(b1111, Calc::add(b0101, b1010));
+  EXPECT_EQ(b0101, Calc::add(b1111, b1010));
+  EXPECT_EQ(b1010, Calc::add(b1111, b0101));
+  EXPECT_EQ(b0000, Calc::add(b1111, b1111));
+}
+
+TEST_F(CalcTest, square) {
+  EXPECT_EQ(Calc::kGFBits[4], Calc::square(Calc::kGFBits[2]));
+
+  // alpha^10^2 = alpha^20 = alpha^5
+  EXPECT_EQ(Calc::kGFBits[5], Calc::square(Calc::kGFBits[10]));
+}
+
+TEST_F(CalcTest, Decode) {
+  const Calc& calc = calc_errors_;
+
+  const unsigned char s1 = calc.r(1);
+  const unsigned char s3 = calc.r(3);
+  const unsigned char s5 = calc.r(5);
+  ASSERT_EQ(b1011, s1);
+  ASSERT_EQ(b1011, s3);
+  ASSERT_EQ(b0001, s5);
+
+  const unsigned char s2 = Calc::square(s1);
+  const unsigned char s4 = Calc::square(s2);
+
+  // Solve S1+d1=0
+  const unsigned char d1 = (~s1) & 0xf;
+
+  // const unsigned char s2d1 = Calc::mult(s2, d1);
+  // const unsigned char s4d1 = Calc::mult(s4, d1);
+  // const unsigned char s3_plus_s2d1 = Calc::add(s3, s2d1);
+
+  // auto calc_eq2 = [&](const Calc& calc, unsigned char d2, unsigned char d3) {
+  //   unsigned char res = s3_plus_s2d1;
+  //   res = Calc::add(res, Calc::mult(s1, d2));
+  //   res = Calc::add(res, d3);
+  //   return res;
+  // };
 }
 
 }  // namespace
