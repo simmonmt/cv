@@ -63,6 +63,8 @@ class Calc {
     return kGFBits[(kGFIndexes[a] * 2) % 15];
   }
 
+  static unsigned char mult(unsigned char a, unsigned char b) { return 0; }
+
   unsigned char r(int alpha_power) const {
     unsigned char out_bits = 0;
     for (int i = input_.size() - 1; i >= 0; --i) {
@@ -109,7 +111,7 @@ TEST_F(CalcTest, R) {
   }
 }
 
-TEST_F(CalcTest, add) {
+TEST_F(CalcTest, Add) {
   EXPECT_EQ(b0000, Calc::add(b0000, b0000));
   EXPECT_EQ(b1111, Calc::add(b0101, b1010));
   EXPECT_EQ(b0101, Calc::add(b1111, b1010));
@@ -117,11 +119,16 @@ TEST_F(CalcTest, add) {
   EXPECT_EQ(b0000, Calc::add(b1111, b1111));
 }
 
-TEST_F(CalcTest, square) {
+TEST_F(CalcTest, Square) {
   EXPECT_EQ(Calc::kGFBits[4], Calc::square(Calc::kGFBits[2]));
 
   // alpha^10^2 = alpha^20 = alpha^5
   EXPECT_EQ(Calc::kGFBits[5], Calc::square(Calc::kGFBits[10]));
+}
+
+TEST_F(CalcTest, Mult) {
+  EXPECT_EQ(Calc::kGFBits[4], Calc::mult(Calc::kGFBits[3], Calc::kGFBits[4]));
+  EXPECT_EQ(Calc::kGFBits[0], Calc::mult(Calc::kGFBits[14], Calc::kGFBits[1]));
 }
 
 TEST_F(CalcTest, Decode) {
