@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "absl/base/macros.h"
 #include "absl/strings/str_format.h"
 #include "gtest/gtest.h"
 
@@ -59,11 +60,33 @@ class Calc {
 
   static unsigned char add(unsigned char a, unsigned char b) { return a ^ b; }
 
-  static unsigned char square(unsigned char a) {
-    return kGFBits[(kGFIndexes[a] * 2) % 15];
+  static unsigned char pow(unsigned char a, int exp) {
+    return kGFBits[(kGFIndexes[a] * exp) % 15];
   }
 
-  static unsigned char mult(unsigned char a, unsigned char b) { return 0; }
+  static unsigned char mult(unsigned char m1, unsigned char m2) {
+    const unsigned char a = m1 & 1, b = m1 & 2;
+    const unsigned char c = m1 & 4, d = m1 & 8;
+    const unsigned char e = m2 & 1, f = m2 & 2;
+    const unsigned char g = m2 & 4, h = m2 & 8;
+
+    // From https://en.wikipedia.org/wiki/Finite_field#GF(16) :
+    //   (ae+bh+cg+df) +
+    //   (af+be+bh+cg+df+ch+dg) * alpha +
+    //   (ag+bf+ce+ch+dg+dh) * alpha^2 +
+    //   (ah+bg+cf+de+dh) * alpha^3
+
+    const unsigned char out_a = (a && e) ^ (b && h) ^ (c && g) ^ (d && f);
+    const unsigned char out_b = (a && f) ^ (b && e) ^ (b && h) ^ (c && g) ^
+                                (d && f) ^ (c && h) ^ (d && g);
+    const unsigned char out_c =
+        (a && g) ^ (b && f) ^ (c && e) ^ (c && h) ^ (d && g) ^ (d && h);
+    const unsigned char out_d =
+        (a && h) ^ (b && g) ^ (c && f) ^ (d && e) ^ (d && h);
+
+    return ((out_d & 1) << 3) | ((out_c & 1) << 2) | ((out_b & 1) << 1) |
+           (out_a & 1);
+  }
 
   unsigned char r(int alpha_power) const {
     unsigned char out_bits = 0;
@@ -119,16 +142,29 @@ TEST_F(CalcTest, Add) {
   EXPECT_EQ(b0000, Calc::add(b1111, b1111));
 }
 
-TEST_F(CalcTest, Square) {
-  EXPECT_EQ(Calc::kGFBits[4], Calc::square(Calc::kGFBits[2]));
+TEST_F(CalcTest, Pow) {
+  EXPECT_EQ(Calc::kGFBits[4], Calc::pow(Calc::kGFBits[2], 2));
 
   // alpha^10^2 = alpha^20 = alpha^5
-  EXPECT_EQ(Calc::kGFBits[5], Calc::square(Calc::kGFBits[10]));
+  EXPECT_EQ(Calc::kGFBits[5], Calc::pow(Calc::kGFBits[10], 2));
 }
 
 TEST_F(CalcTest, Mult) {
-  EXPECT_EQ(Calc::kGFBits[4], Calc::mult(Calc::kGFBits[3], Calc::kGFBits[4]));
-  EXPECT_EQ(Calc::kGFBits[0], Calc::mult(Calc::kGFBits[14], Calc::kGFBits[1]));
+  for (int i = 0; i < ABSL_ARRAYSIZE(Calc::kGFBits); ++i) {
+    for (int j = 0; j < ABSL_ARRAYSIZE(Calc::kGFBits); ++j) {
+      const unsigned char m1 = Calc::kGFBits[i];
+      const unsigned char m2 = Calc::kGFBits[j];
+      const unsigned char res = Calc::kGFBits[(i + j) % 15];
+
+      EXPECT_EQ(res, Calc::mult(m1, m2))
+          << "i=" << i << ",j=" << j << " " << int(m1) << "*" << int(m2) << "="
+          << int(res);
+
+      if (i == j) {
+        EXPECT_EQ(res, Calc::pow(m1, 2)) << "square " << i << " " << int(m1);
+      }
+    }
+  }
 }
 
 TEST_F(CalcTest, Decode) {
@@ -141,22 +177,66 @@ TEST_F(CalcTest, Decode) {
   ASSERT_EQ(b1011, s3);
   ASSERT_EQ(b0001, s5);
 
-  const unsigned char s2 = Calc::square(s1);
-  const unsigned char s4 = Calc::square(s2);
+  const unsigned char s2 = Calc::pow(s1, 2);
+  const unsigned char s4 = Calc::pow(s2, 2);
 
-  // Solve S1+d1=0
+  std::cout << "s1=" << int(s1) << ",s2=" << int(s2) << ",s3=" << int(s3)
+            << ",s4=" << int(s4) << ",s5=" << s5 << int(s5) << "\n";
+
+  // Solve Eq1: S1 + d1 = 0
   const unsigned char d1 = (~s1) & 0xf;
 
-  // const unsigned char s2d1 = Calc::mult(s2, d1);
-  // const unsigned char s4d1 = Calc::mult(s4, d1);
-  // const unsigned char s3_plus_s2d1 = Calc::add(s3, s2d1);
+  // Eq2: S3 + S2*d1 + S1*d2 + d3 = 0
+  const unsigned char s3_plus_s2d1 = Calc::add(s3, Calc::mult(s2, d1));
+  auto eq2 = [&](unsigned char d2, unsigned char d3) {
+    unsigned char res = s3_plus_s2d1;
+    res = Calc::add(res, Calc::mult(s1, d2));
+    res = Calc::add(res, d3);
+    return res;
+  };
 
-  // auto calc_eq2 = [&](const Calc& calc, unsigned char d2, unsigned char d3) {
-  //   unsigned char res = s3_plus_s2d1;
-  //   res = Calc::add(res, Calc::mult(s1, d2));
-  //   res = Calc::add(res, d3);
-  //   return res;
-  // };
+  // Eq3: S5 + S4*d1 + S3*d2 + S2*d3 = 0
+  const unsigned char s5_plus_s4d1 = Calc::add(s5, Calc::mult(s4, d1));
+  auto eq3 = [&](unsigned char d2, unsigned char d3) {
+    unsigned char res = s5_plus_s4d1;
+    res = Calc::add(res, Calc::mult(s3, d2));
+    res = Calc::add(res, Calc::mult(s2, d3));
+    return res;
+  };
+
+  bool found = false;
+  unsigned char d2, d3;
+  for (int i = 0; !found && i < ABSL_ARRAYSIZE(Calc::kGFBits); ++i) {
+    for (int j = 0; !found && j < ABSL_ARRAYSIZE(Calc::kGFBits); ++j) {
+      d2 = Calc::kGFBits[i];
+      d3 = Calc::kGFBits[j];
+      if (eq2(d2, d3) == 0 && eq3(d2, d3) == 0) {
+        std::cout << "eq2/3 zero: i=" << i << ",j=" << j << "\n";
+        found = true;
+      }
+    }
+  }
+  ASSERT_TRUE(found);
+
+  std::cout << "d1=" << int(d1) << ", d2=" << int(d2) << ", d3=" << int(d3)
+            << "\n";
+
+  std::cout << "vfy d1 " << int(Calc::add(s1, d1)) << "\n";
+
+  for (int i = 0; i < ABSL_ARRAYSIZE(Calc::kGFBits); ++i) {
+    // Look for x^3 + d1*x^2 + d2*x + d3 == 0
+    unsigned char x = Calc::kGFBits[i];
+    unsigned char res = Calc::pow(x, 3);
+    res = Calc::add(res, Calc::mult(d1, Calc::pow(x, 2)));
+    res = Calc::add(res, Calc::mult(d2, x));
+    res = Calc::add(res, d3);
+
+    if (res == 0) {
+      std::cout << "error i=" << i << "\n";
+    } else {
+      std::cout << "val " << int(res) << "\n";
+    }
+  }
 }
 
 }  // namespace
