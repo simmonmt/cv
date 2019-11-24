@@ -51,13 +51,16 @@ class Calc {
       1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9,
   };
 
-  // Reverses the mapping in kGFBits.
+ private:
+  // Reverses the mapping in kGFBits. Used for exponentiation when the
+  // base is non-zero.
   //    kGFIndexes[kGFBits[i]] = i
   // 0th value is sentinel since no kGFBits element = 0.
   static constexpr unsigned char kGFIndexes[16] = {
       255, 0, 1, 4, 2, 8, 5, 10, 3, 14, 9, 7, 6, 13, 11, 12,
   };
 
+ public:
   // input has 15 bits, MSB (x^14) first.
   Calc(const std::vector<bool>& input) : input_(input){};
 
@@ -76,6 +79,9 @@ class Calc {
   }
 
   static unsigned char pow(unsigned char a, int exp) {
+    if (a == 0) {
+      return a;
+    }
     return kGFBits[(kGFIndexes[a] * exp) % 15];
   }
 
@@ -85,11 +91,19 @@ class Calc {
     const unsigned char e = m2 & 1, f = m2 & 2;
     const unsigned char g = m2 & 4, h = m2 & 8;
 
-    // From https://en.wikipedia.org/wiki/Finite_field#GF(16) :
+    // Given two polynomials in GF(2^4)
+    //   a + b*alpha + c*alpha^2 + d*alpha^3
+    //   e + f*alpha + g*alpha^2 + h*alpha^3
+    // multiplication is defined as:
     //   (ae+bh+cg+df) +
     //   (af+be+bh+cg+df+ch+dg) * alpha +
     //   (ag+bf+ce+ch+dg+dh) * alpha^2 +
     //   (ah+bg+cf+de+dh) * alpha^3
+    // Source: https://en.wikipedia.org/wiki/Finite_field#GF(16)
+    //
+    // Operations on the coefficients (i.e. a-h) are performed in
+    // GF(2). GF(2) addition and multiplication are bitwise XOR and
+    // AND, respectively.
 
     const unsigned char out_a = (a && e) ^ (b && h) ^ (c && g) ^ (d && f);
     const unsigned char out_b = (a && f) ^ (b && e) ^ (b && h) ^ (c && g) ^
@@ -103,10 +117,12 @@ class Calc {
            (out_a & 1);
   }
 
-  unsigned char r(int alpha_power) const {
+  unsigned char r(int alpha_power) const { return r(input_, alpha_power); }
+
+  static unsigned char r(const std::vector<bool> poly, int alpha_power) {
     unsigned char out_bits = 0;
-    for (int i = input_.size() - 1; i >= 0; --i) {
-      if (input_[i]) {
+    for (int i = poly.size() - 1; i >= 0; --i) {
+      if (poly[i]) {
         const int i_power = ((14 - i) * alpha_power) % 15;
         const unsigned char to_add = kGFBits[i_power];
         out_bits = add(out_bits, to_add);
@@ -124,31 +140,35 @@ constexpr unsigned char Calc::kGFIndexes[16];
 class CalcTest : public ::testing::Test {
  public:
   CalcTest()
-      : calc_errors_(
-            // Has errors at *bit indexes* 5 and 13. Note these vectors are
-            // MSB-first.
-            {1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0}),
-        calc_no_errors_({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0}) {}
+      // Note: these vectors are MSB-first.
+      : input_no_errors_({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0}),
+        // Has error at bit index 7
+        input_one_error_({1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0}),
+        // Has error at bit indexes 5 and 13.
+        input_two_errors_({1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0}),
+        calc_no_errors_(input_no_errors_),
+        calc_two_errors_(input_two_errors_) {}
 
-  Calc calc_errors_, calc_no_errors_;
+  std::vector<bool> input_no_errors_, input_one_error_, input_two_errors_;
+  Calc calc_no_errors_, calc_two_errors_;
 };
 
 TEST_F(CalcTest, R) {
   {
-    // Example with two errors from
-    //
-    // https://en.wikipedia.org/wiki/BCH_code#Decoding_of_binary_code_without_unreadable_characters
-    EXPECT_EQ(b1011, calc_errors_.r(1));
-    EXPECT_EQ(b1011, calc_errors_.r(3));
-    EXPECT_EQ(b0001, calc_errors_.r(5));
+    // No errors, same source.
+    Calc calc({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0});
+    EXPECT_EQ(b0000, Calc::r(input_no_errors_, 1));
+    EXPECT_EQ(b0000, Calc::r(input_no_errors_, 3));
+    EXPECT_EQ(b0000, Calc::r(input_no_errors_, 5));
   }
 
   {
-    // No errors, same source.
-    Calc calc({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0});
-    EXPECT_EQ(b0000, calc_no_errors_.r(1));
-    EXPECT_EQ(b0000, calc_no_errors_.r(3));
-    EXPECT_EQ(b0000, calc_no_errors_.r(5));
+    // Example with two errors from
+    //
+    // https://en.wikipedia.org/wiki/BCH_code#Decoding_of_binary_code_without_unreadable_characters
+    EXPECT_EQ(b1011, Calc::r(input_two_errors_, 1));
+    EXPECT_EQ(b1011, Calc::r(input_two_errors_, 3));
+    EXPECT_EQ(b0001, Calc::r(input_two_errors_, 5));
   }
 }
 
@@ -158,9 +178,12 @@ TEST_F(CalcTest, Add) {
   EXPECT_EQ(b0101, Calc::add(b1111, b1010));
   EXPECT_EQ(b1010, Calc::add(b1111, b0101));
   EXPECT_EQ(b0000, Calc::add(b1111, b1111));
+
+  EXPECT_EQ(b1111, Calc::add({b0101, b1010}));
 }
 
 TEST_F(CalcTest, Pow) {
+  EXPECT_EQ(b0000, Calc::pow(b0000, 2));
   EXPECT_EQ(Calc::kGFBits[4], Calc::pow(Calc::kGFBits[2], 2));
 
   // alpha^10^2 = alpha^20 = alpha^5
@@ -186,7 +209,7 @@ TEST_F(CalcTest, Mult) {
 }
 
 TEST_F(CalcTest, Decode) {
-  const Calc& calc = calc_errors_;
+  const Calc& calc = calc_two_errors_;
 
   const unsigned char s1 = calc.r(1);
   const unsigned char s3 = calc.r(3);
