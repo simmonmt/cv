@@ -4,9 +4,12 @@
 
 #include "absl/base/macros.h"
 #include "absl/strings/str_format.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace {
+
+using ::testing::ElementsAre;
 
 enum {
   b0000,
@@ -60,6 +63,18 @@ class Calc {
 
   static unsigned char add(unsigned char a, unsigned char b) { return a ^ b; }
 
+  static unsigned char add(std::initializer_list<unsigned char> elems) {
+    auto iter = elems.begin();
+    if (iter == elems.end()) {
+      return 0;
+    }
+    unsigned char res = *iter;
+    for (++iter; iter != elems.end(); ++iter) {
+      res = add(res, *iter);
+    }
+    return res;
+  }
+
   static unsigned char pow(unsigned char a, int exp) {
     return kGFBits[(kGFIndexes[a] * exp) % 15];
   }
@@ -109,7 +124,10 @@ constexpr unsigned char Calc::kGFIndexes[16];
 class CalcTest : public ::testing::Test {
  public:
   CalcTest()
-      : calc_errors_({1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0}),
+      : calc_errors_(
+            // Has errors at *bit indexes* 5 and 13. Note these vectors are
+            // MSB-first.
+            {1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0}),
         calc_no_errors_({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0}) {}
 
   Calc calc_errors_, calc_no_errors_;
@@ -180,11 +198,11 @@ TEST_F(CalcTest, Decode) {
   const unsigned char s2 = Calc::pow(s1, 2);
   const unsigned char s4 = Calc::pow(s2, 2);
 
-  std::cout << "s1=" << int(s1) << ",s2=" << int(s2) << ",s3=" << int(s3)
-            << ",s4=" << int(s4) << ",s5=" << s5 << int(s5) << "\n";
-
   // Solve Eq1: S1 + d1 = 0
-  const unsigned char d1 = (~s1) & 0xf;
+  const unsigned char d1 = s1;  // (~s1) & 0xf;
+
+  // Verify Eq1
+  ASSERT_EQ(0, Calc::add(s1, d1));
 
   // Eq2: S3 + S2*d1 + S1*d2 + d3 = 0
   const unsigned char s3_plus_s2d1 = Calc::add(s3, Calc::mult(s2, d1));
@@ -204,39 +222,48 @@ TEST_F(CalcTest, Decode) {
     return res;
   };
 
+  static constexpr unsigned char kGFBitsWithZero[] = {
+      1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9, 0,
+  };
+
   bool found = false;
   unsigned char d2, d3;
-  for (int i = 0; !found && i < ABSL_ARRAYSIZE(Calc::kGFBits); ++i) {
-    for (int j = 0; !found && j < ABSL_ARRAYSIZE(Calc::kGFBits); ++j) {
+  for (int i = 0; !found && i < ABSL_ARRAYSIZE(kGFBitsWithZero); ++i) {
+    for (int j = 0; !found && j < ABSL_ARRAYSIZE(kGFBitsWithZero); ++j) {
       d2 = Calc::kGFBits[i];
       d3 = Calc::kGFBits[j];
       if (eq2(d2, d3) == 0 && eq3(d2, d3) == 0) {
-        std::cout << "eq2/3 zero: i=" << i << ",j=" << j << "\n";
         found = true;
       }
     }
   }
   ASSERT_TRUE(found);
 
-  std::cout << "d1=" << int(d1) << ", d2=" << int(d2) << ", d3=" << int(d3)
-            << "\n";
+  // Verify eq2 and eq3
+  ASSERT_EQ(0, Calc::add({s3,                  //
+                          Calc::mult(s2, d1),  //
+                          Calc::mult(s1, d2),  //
+                          d3}));
+  ASSERT_EQ(0, Calc::add({s5,                  //
+                          Calc::mult(s4, d1),  //
+                          Calc::mult(s3, d2),  //
+                          Calc::mult(s2, d3)}));
 
-  std::cout << "vfy d1 " << int(Calc::add(s1, d1)) << "\n";
-
+  std::vector<int> errors;
   for (int i = 0; i < ABSL_ARRAYSIZE(Calc::kGFBits); ++i) {
     // Look for x^3 + d1*x^2 + d2*x + d3 == 0
     unsigned char x = Calc::kGFBits[i];
-    unsigned char res = Calc::pow(x, 3);
-    res = Calc::add(res, Calc::mult(d1, Calc::pow(x, 2)));
-    res = Calc::add(res, Calc::mult(d2, x));
-    res = Calc::add(res, d3);
+    unsigned char res = Calc::add({Calc::pow(x, 3),                  //
+                                   Calc::mult(d1, Calc::pow(x, 2)),  //
+                                   Calc::mult(d2, x),                //
+                                   d3});
 
     if (res == 0) {
-      std::cout << "error i=" << i << "\n";
-    } else {
-      std::cout << "val " << int(res) << "\n";
+      errors.push_back(i);
     }
   }
+
+  EXPECT_THAT(errors, ElementsAre(5, 13));
 }
 
 }  // namespace
