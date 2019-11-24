@@ -241,6 +241,8 @@ cc_test(
     size = "small",
     srcs = ["qr_decode_utils_test.cc"],
     deps = [
+        ":bits",
+        ":gf",
         ":qr_decode_utils",
         "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest_main",
@@ -266,6 +268,23 @@ cc_test(
 )
 
 cc_library(
+    name = "gf",
+    srcs = ["gf.cc"],
+    hdrs = ["gf.h"],
+)
+
+cc_test(
+    name = "gf_test",
+    srcs = ["gf_test.cc"],
+    deps = [
+        ":bits",
+        ":gf",
+        "@com_google_absl//absl/base",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "testutils",
     testonly = 1,
     srcs = ["testutils.cc"],
@@ -281,4 +300,10 @@ cc_test(
         ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "bits",
+    testonly = 1,
+    hdrs = ["bits.h"],
 )
