@@ -26,3 +26,9 @@ cc_binary(
     name = "bch3",
     srcs = ["bch3.c"],
 )
+
+cc_binary(
+    name = "gf_gen",
+    srcs = ["gf_gen.cc"],
+    deps = ["//qrcode:gf"],
+)
