@@ -32,7 +32,7 @@ TEST(GF16Test, Mult) {
           << int(res);
 
       if (i == j) {
-        EXPECT_EQ(res, gf16.Pow(m1, 2)) << "square " << i << " " << int(m1);
+        EXPECT_EQ(res, gf16.Exp(m1, 2)) << "square " << i << " " << int(m1);
       }
     }
   }
@@ -41,11 +41,11 @@ TEST(GF16Test, Mult) {
 TEST(GF16Test, Pow) {
   GF16 gf16;
 
-  EXPECT_EQ(b0000, gf16.Pow(b0000, 2));
-  EXPECT_EQ(gf16.PowersOfAlpha()[4], gf16.Pow(gf16.PowersOfAlpha()[2], 2));
+  EXPECT_EQ(b0000, gf16.Exp(b0000, 2));
+  EXPECT_EQ(gf16.PowersOfAlpha()[4], gf16.Exp(gf16.PowersOfAlpha()[2], 2));
 
   // alpha^10^2 = alpha^20 = alpha^5
-  EXPECT_EQ(gf16.PowersOfAlpha()[5], gf16.Pow(gf16.PowersOfAlpha()[10], 2));
+  EXPECT_EQ(gf16.PowersOfAlpha()[5], gf16.Exp(gf16.PowersOfAlpha()[10], 2));
 }
 
 TEST(GF16Test, Enumerate) {

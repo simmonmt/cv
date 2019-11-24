@@ -74,8 +74,8 @@ TEST_F(CalcTest, Decode) {
   ASSERT_EQ(b1011, s3);
   ASSERT_EQ(b0001, s5);
 
-  const unsigned char s2 = gf16.Pow(s1, 2);
-  const unsigned char s4 = gf16.Pow(s2, 2);
+  const unsigned char s2 = gf16.Exp(s1, 2);
+  const unsigned char s4 = gf16.Exp(s2, 2);
 
   // Solve Eq1: S1 + d1 = 0
   const unsigned char d1 = s1;
@@ -130,8 +130,8 @@ TEST_F(CalcTest, Decode) {
   for (int i = 0; i < powers_of_alpha.size(); ++i) {
     // Look for x^3 + d1*x^2 + d2*x + d3 == 0
     unsigned char x = powers_of_alpha[i];
-    unsigned char res = gf16.Add({gf16.Pow(x, 3),                 //
-                                  gf16.Mult(d1, gf16.Pow(x, 2)),  //
+    unsigned char res = gf16.Add({gf16.Exp(x, 3),                 //
+                                  gf16.Mult(d1, gf16.Exp(x, 2)),  //
                                   gf16.Mult(d2, x),               //
                                   d3});
 

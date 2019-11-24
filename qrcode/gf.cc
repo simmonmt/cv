@@ -63,7 +63,7 @@ unsigned char GF16::Mult(unsigned char m1, unsigned char m2) const {
          (out_a & 1);
 }
 
-unsigned char GF16::Pow(unsigned char x, int y) const {
+unsigned char GF16::Exp(unsigned char x, int y) const {
   if (x == 0) {
     return x;
   }
