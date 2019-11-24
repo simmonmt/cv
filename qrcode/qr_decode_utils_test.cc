@@ -94,16 +94,12 @@ TEST_F(CalcTest, Decode) {
     return res;
   };
 
-  static constexpr unsigned char kGFBitsWithZero[] = {
-      1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9, 0,
-  };
-
   bool found = false;
   unsigned char d2, d3;
-  for (int i = 0; !found && i < ABSL_ARRAYSIZE(kGFBitsWithZero); ++i) {
-    for (int j = 0; !found && j < ABSL_ARRAYSIZE(kGFBitsWithZero); ++j) {
-      d2 = GF16::kPowersOfAlpha[i];
-      d3 = GF16::kPowersOfAlpha[j];
+  for (int i = 0; !found && i < ABSL_ARRAYSIZE(GF16::kElements); ++i) {
+    for (int j = 0; !found && j < ABSL_ARRAYSIZE(GF16::kElements); ++j) {
+      d2 = GF16::kElements[i];
+      d3 = GF16::kElements[j];
       if (eq2(d2, d3) == 0 && eq3(d2, d3) == 0) {
         found = true;
       }
