@@ -16,13 +16,14 @@ using ::testing::ElementsAre;
 
 class Calc {
  public:
-  static unsigned char R(const std::vector<bool> poly, int alpha_power) {
+  static unsigned char R(const GF& gf, const std::vector<bool> poly,
+                         int alpha_power) {
     unsigned char out_bits = 0;
-    for (int i = poly.size() - 1; i >= 0; --i) {
+    for (int i = 0; i < poly.size(); ++i) {
       if (poly[i]) {
-        const int i_power = ((14 - i) * alpha_power) % 15;
-        const unsigned char to_add = GF16().PowersOfAlpha()[i_power];
-        out_bits = GF16().Add({out_bits, to_add});
+        const int i_power = (i * alpha_power) % 15;
+        const unsigned char to_add = gf.PowersOfAlpha()[i_power];
+        out_bits = gf.Add({out_bits, to_add});
       }
     }
     return out_bits;
@@ -32,39 +33,43 @@ class Calc {
 class CalcTest : public ::testing::Test {
  public:
   CalcTest()
-      // These examples are from
+      // Example from
       // https://en.wikipedia.org/wiki/BCH_code#Decoding_of_binary_code_without_unreadable_characters
-      // Note: these vectors are MSB-first.
-      : input_no_errors_({1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0}),
-        // Has error at bit index 7
-        input_one_error_({1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0}),
-        // Has error at bit indexes 5 and 13.
-        input_two_errors_({1, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0}) {}
+      // In reverse order because we want LSB first.
+      : input_({0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1}) {}
 
-  std::vector<bool> input_no_errors_, input_one_error_, input_two_errors_;
+  std::vector<bool> input_;
 };
 
 TEST_F(CalcTest, R) {
-  {
-    // No errors, same source.
-    EXPECT_EQ(b0000, Calc::R(input_no_errors_, 1));
-    EXPECT_EQ(b0000, Calc::R(input_no_errors_, 3));
-    EXPECT_EQ(b0000, Calc::R(input_no_errors_, 5));
-  }
+  GF16 gf16;
+  std::vector<bool> input = input_;
 
-  {
-    EXPECT_EQ(b1011, Calc::R(input_two_errors_, 1));
-    EXPECT_EQ(b1011, Calc::R(input_two_errors_, 3));
-    EXPECT_EQ(b0001, Calc::R(input_two_errors_, 5));
-  }
+  // No errors
+  EXPECT_EQ(b0000, Calc::R(gf16, input, 1));
+  EXPECT_EQ(b0000, Calc::R(gf16, input, 3));
+  EXPECT_EQ(b0000, Calc::R(gf16, input, 5));
+
+  // Two errors
+  input[5] = !input[5];
+  input[13] = !input[13];
+  EXPECT_EQ(b1011, Calc::R(gf16, input, 1));
+  EXPECT_EQ(b1011, Calc::R(gf16, input, 3));
+  EXPECT_EQ(b0001, Calc::R(gf16, input, 5));
 }
 
 TEST_F(CalcTest, Decode) {
   GF16 gf16;
 
-  const unsigned char s1 = Calc::R(input_two_errors_, 1);
-  const unsigned char s3 = Calc::R(input_two_errors_, 3);
-  const unsigned char s5 = Calc::R(input_two_errors_, 5);
+  std::vector<bool> input = input_;
+  input[5] = !input[5];
+  input[13] = !input[13];
+
+  const std::vector<int> expected_errors = {5, 13};
+
+  const unsigned char s1 = Calc::R(gf16, input, 1);
+  const unsigned char s3 = Calc::R(gf16, input, 3);
+  const unsigned char s5 = Calc::R(gf16, input, 5);
   ASSERT_EQ(b1011, s1);
   ASSERT_EQ(b1011, s3);
   ASSERT_EQ(b0001, s5);
@@ -135,7 +140,7 @@ TEST_F(CalcTest, Decode) {
     }
   }
 
-  EXPECT_THAT(errors, ElementsAre(5, 13));
+  EXPECT_THAT(errors, expected_errors);
 }
 
 }  // namespace
