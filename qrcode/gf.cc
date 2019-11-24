@@ -69,3 +69,5 @@ unsigned char GF16::Exp(unsigned char x, int y) const {
   }
   return kPowersOfAlpha[(kElementsToPowers[x] * y) % 15];
 }
+
+unsigned char GF16::Power(int y) const { return kPowersOfAlpha[y % 15]; }

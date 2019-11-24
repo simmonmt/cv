@@ -21,9 +21,7 @@ class Calc {
     unsigned char out_bits = 0;
     for (int i = 0; i < poly.size(); ++i) {
       if (poly[i]) {
-        const int i_power = (i * alpha_power) % 15;
-        const unsigned char to_add = gf.PowersOfAlpha()[i_power];
-        out_bits = gf.Add({out_bits, to_add});
+        out_bits = gf.Add({out_bits, gf.Power(i * alpha_power)});
       }
     }
     return out_bits;
