@@ -2,33 +2,59 @@
 #define _QRCODE_GF_H_ 1
 
 #include <initializer_list>
+#include <vector>
 
-// Functions used to perform operations in GF(16), aka GF(2^4).
-// See also https://en.wikipedia.org/wiki/Finite_field#GF(16)
-class GF16 {
+class GF {
  public:
-  // This array contains powers of alpha, which are elements of
-  // GF(16). These elements take the form:
+  // The returned vector contains powers [0..2^m-2] of alpha, which
+  // are members of the field. These elements have m terms, and take
+  // the form:
   //
-  //    a + b*alpha + c*alpha^2 + d*alpha^3
+  //    a + b*alpha + c*alpha^2 + d*alpha^3 + ...
   //
   // for values of a, b, c, d in GF(2) (or 0, 1). The elements are
-  // stored bitwise in the array as d, c, b, a. The array wraps, as
-  // alpha^15 == alpha^0.
+  // stored bitwise in the array as d, c, b, a. The array wraps,
+  // because alpha^(2^m-1) == alpha^0.
   //
-  // Examples:
+  // Examples in GF(2^4):
   //   i=0 is alpha^0 => 1,       stored as 0b0001
   //   i=1 is alpha^1 => alpha,   stored as 0b0010
   //   ...
   //   i=3 is alpha^3 => alpha^3, stored as 0b1000
   //   i=4 is alpha^4 => alpha+1, stored as 0b0011
   //   ...
+  virtual const std::vector<unsigned char>& PowersOfAlpha() = 0;
+
+  // This vector contains all elements of the field. The first 2^m-1 are the
+  // same as in PowersOfAlpha.
+  virtual const std::vector<unsigned char>& Elements() = 0;
+
+  // Adds elements of the field.
+  virtual unsigned char Add(std::initializer_list<unsigned char> elems) = 0;
+
+  // Multiplies elements of the field.
+  virtual unsigned char Mult(unsigned char m1, unsigned char m2) = 0;
+
+  // Returns x^y, where x is an element of the field.
+  virtual unsigned char Pow(unsigned char x, int y) = 0;
+};
+
+// Functions used to perform operations in GF(16), aka GF(2^4).
+// See also https://en.wikipedia.org/wiki/Finite_field#GF(16)
+class GF16 : public GF {
+ public:
+  const std::vector<unsigned char>& PowersOfAlpha() override;
+  const std::vector<unsigned char>& Elements() override;
+
+  unsigned char Add(std::initializer_list<unsigned char> elems) override;
+  unsigned char Mult(unsigned char m1, unsigned char m2) override;
+  unsigned char Pow(unsigned char x, int y) override;
+
+ private:
   static constexpr unsigned char kPowersOfAlpha[15] = {
       1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9,
   };
 
-  // This array contains all elements of GF(16). The first 15 are the
-  // same as in kPowersOfAlpha.
   static constexpr unsigned char kElements[16] = {
       1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9, 0,
   };
@@ -44,15 +70,6 @@ class GF16 {
   static constexpr unsigned char kElementsToPowers[16] = {
       255, 0, 1, 4, 2, 8, 5, 10, 3, 14, 9, 7, 6, 13, 11, 12,
   };
-
-  // Adds elements of GF(2^4).
-  static unsigned char Add(std::initializer_list<unsigned char> elems);
-
-  // Multiplies elements of GF(2^4).
-  static unsigned char Mult(unsigned char m1, unsigned char m2);
-
-  // Returns x^y, where x is an element of GF(2^4).
-  static unsigned char Pow(unsigned char x, int y);
 };
 
 #endif  // _QRCODE_GF_H_

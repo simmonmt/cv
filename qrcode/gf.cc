@@ -1,8 +1,22 @@
 #include "qrcode/gf.h"
 
+#include "absl/base/macros.h"
+
 constexpr unsigned char GF16::kPowersOfAlpha[];
 constexpr unsigned char GF16::kElements[];
 constexpr unsigned char GF16::kElementsToPowers[];
+
+const std::vector<unsigned char>& GF16::PowersOfAlpha() {
+  static const std::vector<unsigned char> kVec(
+      kPowersOfAlpha, kPowersOfAlpha + ABSL_ARRAYSIZE(kPowersOfAlpha));
+  return kVec;
+}
+
+const std::vector<unsigned char>& GF16::Elements() {
+  static const std::vector<unsigned char> kVec(
+      kElements, kElements + ABSL_ARRAYSIZE(kElements));
+  return kVec;
+}
 
 unsigned char GF16::Add(std::initializer_list<unsigned char> elems) {
   // Addition is defined as bitwise XOR.

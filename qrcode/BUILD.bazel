@@ -271,6 +271,9 @@ cc_library(
     name = "gf",
     srcs = ["gf.cc"],
     hdrs = ["gf.h"],
+    deps = [
+        "@com_google_absl//absl/base",
+    ],
 )
 
 cc_test(

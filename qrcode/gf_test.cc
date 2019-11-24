@@ -8,37 +8,54 @@
 namespace {
 
 TEST(GF16Test, Add) {
-  EXPECT_EQ(b0000, GF16::Add({b0000, b0000}));
-  EXPECT_EQ(b1111, GF16::Add({b0101, b1010}));
-  EXPECT_EQ(b0101, GF16::Add({b1111, b1010}));
-  EXPECT_EQ(b1010, GF16::Add({b1111, b0101}));
-  EXPECT_EQ(b0000, GF16::Add({b1111, b1111}));
+  GF16 gf16;
+
+  EXPECT_EQ(b0000, gf16.Add({b0000, b0000}));
+  EXPECT_EQ(b1111, gf16.Add({b0101, b1010}));
+  EXPECT_EQ(b0101, gf16.Add({b1111, b1010}));
+  EXPECT_EQ(b1010, gf16.Add({b1111, b0101}));
+  EXPECT_EQ(b0000, gf16.Add({b1111, b1111}));
 }
 
 TEST(GF16Test, Mult) {
-  for (int i = 0; i < ABSL_ARRAYSIZE(GF16::kPowersOfAlpha); ++i) {
-    for (int j = 0; j < ABSL_ARRAYSIZE(GF16::kPowersOfAlpha); ++j) {
-      const unsigned char m1 = GF16::kPowersOfAlpha[i];
-      const unsigned char m2 = GF16::kPowersOfAlpha[j];
-      const unsigned char res = GF16::kPowersOfAlpha[(i + j) % 15];
+  GF16 gf16;
 
-      EXPECT_EQ(res, GF16::Mult(m1, m2))
+  const std::vector<unsigned char>& powers_of_alpha = gf16.PowersOfAlpha();
+  for (int i = 0; i < powers_of_alpha.size(); ++i) {
+    for (int j = 0; j < powers_of_alpha.size(); ++j) {
+      const unsigned char m1 = powers_of_alpha[i];
+      const unsigned char m2 = powers_of_alpha[j];
+      const unsigned char res = powers_of_alpha[(i + j) % 15];
+
+      EXPECT_EQ(res, gf16.Mult(m1, m2))
           << "i=" << i << ",j=" << j << " " << int(m1) << "*" << int(m2) << "="
           << int(res);
 
       if (i == j) {
-        EXPECT_EQ(res, GF16::Pow(m1, 2)) << "square " << i << " " << int(m1);
+        EXPECT_EQ(res, gf16.Pow(m1, 2)) << "square " << i << " " << int(m1);
       }
     }
   }
 }
 
 TEST(GF16Test, Pow) {
-  EXPECT_EQ(b0000, GF16::Pow(b0000, 2));
-  EXPECT_EQ(GF16::kPowersOfAlpha[4], GF16::Pow(GF16::kPowersOfAlpha[2], 2));
+  GF16 gf16;
+
+  EXPECT_EQ(b0000, gf16.Pow(b0000, 2));
+  EXPECT_EQ(gf16.PowersOfAlpha()[4], gf16.Pow(gf16.PowersOfAlpha()[2], 2));
 
   // alpha^10^2 = alpha^20 = alpha^5
-  EXPECT_EQ(GF16::kPowersOfAlpha[5], GF16::Pow(GF16::kPowersOfAlpha[10], 2));
+  EXPECT_EQ(gf16.PowersOfAlpha()[5], gf16.Pow(gf16.PowersOfAlpha()[10], 2));
+}
+
+TEST(GF16Test, Enumerate) {
+  GF16 gf16;
+  unsigned char cur = 1, mult = 2;
+
+  for (int i = 0; i < 20; ++i) {
+    std::cout << "i=" << i << " cur=" << int(cur) << "\n";
+    cur = gf16.Mult(cur, mult);
+  }
 }
 
 }  // namespace
