@@ -123,6 +123,7 @@ TEST_F(CalcTest, Decode) {
                          gf16.Mult(s3, d2),  //
                          gf16.Mult(s2, d3)}));
 
+  // Find the bits with errors
   std::vector<int> errors;
   const std::vector<unsigned char>& powers_of_alpha = gf16.PowersOfAlpha();
   for (int i = 0; i < powers_of_alpha.size(); ++i) {
