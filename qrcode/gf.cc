@@ -6,19 +6,19 @@ constexpr unsigned char GF16::kPowersOfAlpha[];
 constexpr unsigned char GF16::kElements[];
 constexpr unsigned char GF16::kElementsToPowers[];
 
-const std::vector<unsigned char>& GF16::PowersOfAlpha() {
+const std::vector<unsigned char>& GF16::PowersOfAlpha() const {
   static const std::vector<unsigned char> kVec(
       kPowersOfAlpha, kPowersOfAlpha + ABSL_ARRAYSIZE(kPowersOfAlpha));
   return kVec;
 }
 
-const std::vector<unsigned char>& GF16::Elements() {
+const std::vector<unsigned char>& GF16::Elements() const {
   static const std::vector<unsigned char> kVec(
       kElements, kElements + ABSL_ARRAYSIZE(kElements));
   return kVec;
 }
 
-unsigned char GF16::Add(std::initializer_list<unsigned char> elems) {
+unsigned char GF16::Add(std::initializer_list<unsigned char> elems) const {
   // Addition is defined as bitwise XOR.
   auto iter = elems.begin();
   if (iter == elems.end()) {
@@ -31,7 +31,7 @@ unsigned char GF16::Add(std::initializer_list<unsigned char> elems) {
   return res;
 }
 
-unsigned char GF16::Mult(unsigned char m1, unsigned char m2) {
+unsigned char GF16::Mult(unsigned char m1, unsigned char m2) const {
   const unsigned char a = m1 & 1, b = m1 & 2;
   const unsigned char c = m1 & 4, d = m1 & 8;
   const unsigned char e = m2 & 1, f = m2 & 2;
@@ -63,7 +63,7 @@ unsigned char GF16::Mult(unsigned char m1, unsigned char m2) {
          (out_a & 1);
 }
 
-unsigned char GF16::Pow(unsigned char x, int y) {
+unsigned char GF16::Pow(unsigned char x, int y) const {
   if (x == 0) {
     return x;
   }

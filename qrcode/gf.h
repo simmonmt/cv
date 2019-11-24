@@ -6,6 +6,8 @@
 
 class GF {
  public:
+  virtual ~GF() = default;
+
   // The returned vector contains powers [0..2^m-2] of alpha, which
   // are members of the field. These elements have m terms, and take
   // the form:
@@ -23,32 +25,35 @@ class GF {
   //   i=3 is alpha^3 => alpha^3, stored as 0b1000
   //   i=4 is alpha^4 => alpha+1, stored as 0b0011
   //   ...
-  virtual const std::vector<unsigned char>& PowersOfAlpha() = 0;
+  virtual const std::vector<unsigned char>& PowersOfAlpha() const = 0;
 
   // This vector contains all elements of the field. The first 2^m-1 are the
   // same as in PowersOfAlpha.
-  virtual const std::vector<unsigned char>& Elements() = 0;
+  virtual const std::vector<unsigned char>& Elements() const = 0;
 
   // Adds elements of the field.
-  virtual unsigned char Add(std::initializer_list<unsigned char> elems) = 0;
+  virtual unsigned char Add(
+      std::initializer_list<unsigned char> elems) const = 0;
 
   // Multiplies elements of the field.
-  virtual unsigned char Mult(unsigned char m1, unsigned char m2) = 0;
+  virtual unsigned char Mult(unsigned char m1, unsigned char m2) const = 0;
 
   // Returns x^y, where x is an element of the field.
-  virtual unsigned char Pow(unsigned char x, int y) = 0;
+  virtual unsigned char Pow(unsigned char x, int y) const = 0;
 };
 
 // Functions used to perform operations in GF(16), aka GF(2^4).
 // See also https://en.wikipedia.org/wiki/Finite_field#GF(16)
 class GF16 : public GF {
  public:
-  const std::vector<unsigned char>& PowersOfAlpha() override;
-  const std::vector<unsigned char>& Elements() override;
+  ~GF16() override = default;
 
-  unsigned char Add(std::initializer_list<unsigned char> elems) override;
-  unsigned char Mult(unsigned char m1, unsigned char m2) override;
-  unsigned char Pow(unsigned char x, int y) override;
+  const std::vector<unsigned char>& PowersOfAlpha() const override;
+  const std::vector<unsigned char>& Elements() const override;
+
+  unsigned char Add(std::initializer_list<unsigned char> elems) const override;
+  unsigned char Mult(unsigned char m1, unsigned char m2) const override;
+  unsigned char Pow(unsigned char x, int y) const override;
 
  private:
   static constexpr unsigned char kPowersOfAlpha[15] = {
