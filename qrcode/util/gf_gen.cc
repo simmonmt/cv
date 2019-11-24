@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+namespace {
+
 struct Term {
   Term(char l, char r, int y) : l(l), r(r), y(y) {}
 
@@ -12,12 +14,8 @@ std::ostream& operator<<(std::ostream& s, const Term& t) {
   return s << t.l << t.r << "A^" << t.y;
 }
 
-int main(int argc, char** argv) {
-  std::cout << "gf_gen\n";
-
-  int m = 4;
-  const char* left = "abcd";
-  const char* right = "efgh";
+void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
+  std::cout << "=== m=" << m << " mult\n";
 
   std::vector<Term> terms;
   for (int i = 0; i < m; ++i) {
@@ -31,8 +29,6 @@ int main(int argc, char** argv) {
     std::cout << t << " ";
   }
   std::cout << "\n";
-
-  char bits[] = {1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9};
 
   std::vector<Term> simp;
   for (const Term& t : terms) {
@@ -60,6 +56,22 @@ int main(int argc, char** argv) {
     }
     std::cout << "\n";
   }
+}
+
+}  // namespace
+
+int main(int argc, char** argv) {
+  std::cout << "gf_gen\n";
+
+  // Bits for GF(2^4)
+  static const int kGF24Bits[] = {1, 2,  4, 8,  3,  6,  12, 11,
+                                  5, 10, 7, 14, 15, 13, 9};
+  GenMultTerms(4, "abcd", "efgh", kGF24Bits);
+
+  // Bits for GF(2^5)
+  // alpha^5 is a guess based on the 2^4 pattern.
+  static const int kGF25Bits[] = {1, 2, 4, 8, 16, 3, 6, 12, 24};
+  GenMultTerms(5, "abcde", "fghij", kGF25Bits);
 
   return 0;
 }
