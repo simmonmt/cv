@@ -56,6 +56,22 @@ void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
     }
     std::cout << "\n";
   }
+
+  for (int pow = 0; pow < m; ++pow) {
+    std::cout << pow << " ";
+    bool first = true;
+    for (const Term& t : simp) {
+      if (t.y == pow) {
+        if (first) {
+          first = false;
+        } else {
+          std::cout << " ^ ";
+        }
+        std::cout << "(" << t.l << "&&" << t.r << ")";
+      }
+    }
+    std::cout << "\n";
+  }
 }
 
 }  // namespace
