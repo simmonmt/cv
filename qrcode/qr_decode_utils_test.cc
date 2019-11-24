@@ -71,7 +71,7 @@ TEST_F(CalcTest, Decode) {
   const unsigned char s4 = GF16::Pow(s2, 2);
 
   // Solve Eq1: S1 + d1 = 0
-  const unsigned char d1 = s1;  // (~s1) & 0xf;
+  const unsigned char d1 = s1;
 
   // Verify Eq1
   ASSERT_EQ(0, GF16::Add({s1, d1}));
