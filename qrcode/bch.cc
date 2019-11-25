@@ -22,6 +22,10 @@ absl::variant<std::vector<bool>, std::string> DecodeBCH(
   const unsigned char s3 = R(gf, bits, 3);
   const unsigned char s5 = R(gf, bits, 5);
 
+  std::cout << "s1=" << int(s1) << "\n";
+  std::cout << "s3=" << int(s3) << "\n";
+  std::cout << "s5=" << int(s5) << "\n";
+
   if (s1 == 0 && s3 == 0 && s5 == 0) {
     return bits;
   }

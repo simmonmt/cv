@@ -22,7 +22,10 @@ absl::variant<std::vector<bool>, std::string> CallDecodeBCH(
   return out;
 }
 
-TEST(BCHDecoderTest, Test15_5) {
+TEST(BCHDecoderTest, Test15_5_Wikipedia) {
+  // Example from
+  // https://en.wikipedia.org/wiki/BCH_code#Decoding_of_binary_code_without_unreadable_characters
+  // In reverse order because we want LSB first.
   const std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
 
   // No errors
@@ -37,12 +40,23 @@ TEST(BCHDecoderTest, Test15_5) {
               VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
 }
 
+TEST(BCHDecoderTest, Test15_5_QRStandard) {
+  // Error Correction level M, Mask Pattern 101
+  // Example from Annex C in the 18004:2000(E) standard
+  const std::vector<bool> ref = {0, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0};
+  EXPECT_THAT(CallDecodeBCH(GF16(), ref),
+              VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
+}
+
 TEST(BCHDecoderTest, Test18_6) {
-  const std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 1, 0,
-                                 0, 1, 1, 1, 1, 1, 0, 0, 0};
+  // const std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 1, 0,
+  //                                0, 1, 1, 1, 1, 1, 0, 0, 0};
+  const std::vector<bool> ref = {0, 0, 0, 1, 1, 1, 1, 1, 0,
+                                 0, 1, 0, 0, 1, 0, 1, 0, 0};
 
   EXPECT_THAT(CallDecodeBCH(GF32(), ref),
               VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
+  return;
 
   // Two errors
   std::vector<bool> input = ref;

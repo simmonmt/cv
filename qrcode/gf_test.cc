@@ -76,4 +76,14 @@ TEST(GF32Test, Exp) {
   EXPECT_EQ(gf32.PowersOfAlpha()[9], gf32.Exp(gf32.PowersOfAlpha()[10], 3));
 }
 
+TEST(GF32Test, Enumerate) {
+  unsigned char val = 1;
+  unsigned char mult = 2;
+
+  for (int i = 0; i < 100; ++i) {
+    std::cout << "i=" << i << " => " << int(val) << "\n";
+    val = GF32().Mult(val, mult);
+  }
+}
+
 }  // namespace

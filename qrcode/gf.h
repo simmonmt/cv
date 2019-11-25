@@ -100,10 +100,15 @@ class GF32 : public GF {
       10, 20, 11, 22, 15, 30, 31, 29, 25, 17,
   };
 
-  static constexpr unsigned char kElements[22] = {
-      1,  2,  4,  8,  16, 3,  6,  12, 24, 19, 5,
-      10, 20, 11, 22, 15, 30, 31, 29, 25, 17, 0,
+  static constexpr unsigned char kElements[32] = {
+      0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15,
+      16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
   };
+
+  /* static constexpr unsigned char kElements[22] = { */
+  /*     1,  2,  4,  8,  16, 3,  6,  12, 24, 19, 5, */
+  /*     10, 20, 11, 22, 15, 30, 31, 29, 25, 17, 0, */
+  /* }; */
 
   static constexpr unsigned char kElementsToPowers[32] = {
       255, 0,  1,   5, 2,  10,  6,  255, 3, 255, 11,  13,  7,   255, 255, 15,
