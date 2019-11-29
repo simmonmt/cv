@@ -2,6 +2,7 @@
 
 #include <tuple>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/str_format.h"
 #include "absl/types/optional.h"
 
@@ -43,11 +44,6 @@ struct Extent {
   int len;
 };
 
-std::ostream& operator<<(std::ostream& stream, const Extent& extent) {
-  return stream << absl::StrFormat("[%d,%d)", extent.start,
-                                   extent.start + extent.len);
-}
-
 absl::optional<std::vector<Extent>> FindPositioningPointExtents(
     PixelIterator<const uchar> iter, const Point& center, bool lr) {
   iter.Seek(center);
@@ -68,7 +64,6 @@ absl::optional<std::vector<Extent>> FindPositioningPointExtents(
   int ref = lr ? center.x : center.y;
 
   Extent center_black(ref - (back[0] - 1), back[0] + fwd[0] - 1);
-  std::cout << "center black " << center_black << "\n";
 
   Extent back_white(center_black.start - back[1], back[1]);
   Extent back_black(back_white.start - back[2], back[2]);
@@ -222,7 +217,8 @@ absl::variant<std::vector<int>, std::string> FindYCoords(
 
 }  // namespace
 
-absl::variant<std::string> ExtractCode(const QRImage& qr_image) {
+absl::variant<std::unique_ptr<QRCodeArray>, std::string> ExtractCode(
+    const QRImage& qr_image) {
   // The timing marks are positioned as follows relative to the top
   // left positionining mark.
   //
@@ -259,18 +255,64 @@ absl::variant<std::string> ExtractCode(const QRImage& qr_image) {
   const std::vector<int> y_coords =
       std::move(absl::get<std::vector<int>>(maybe_y_coords));
 
-  PixelIterator<const uchar> iter = PixelIteratorFromGrayImage(qr_image.image);
+  auto qr_array =
+      absl::make_unique<QRCodeArray>(y_coords.size(), x_coords.size());
+
+  PixelIterator<const uchar> image_iter =
+      PixelIteratorFromGrayImage(qr_image.image);
   for (int y = 0; y < y_coords.size(); ++y) {
     for (int x = 0; x < x_coords.size(); ++x) {
-      iter.Seek(x_coords[x], y_coords[y]);
-      if (iter.Get() == 0) {
-        std::cout << ".";
-      } else {
-        std::cout << "X";
-      }
+      Point image_point(x_coords[x], y_coords[y]);
+      Point qr_point(x, y);
+      image_iter.Seek(image_point);
+      qr_array->Set(qr_point, image_iter.Get() == 0);
     }
+  }
+
+  return std::move(qr_array);
+}
+
+QRCodeArray::QRCodeArray(int height, int width)
+    : height_(height), width_(width), array_(height * width) {}
+
+void QRCodeArray::Set(Point p, bool val) {
+  if (p.x < 0 || p.y < 0 || p.x >= width_ || p.y >= height_) {
+    return;
+  }
+
+  array_[p.y * width_ + p.x] = val;
+}
+
+bool QRCodeArray::Get(Point p) const {
+  if (p.x < 0 || p.y < 0 || p.x >= width_ || p.y >= height_) {
+    return false;
+  }
+
+  return array_[p.y * width_ + p.x];
+}
+
+void QRCodeArray::Dump() const {
+  int num_rows = 0;
+  int div = 1;
+  for (int n = width_; n > 0; n /= 10) {
+    if (++num_rows > 1) {
+      div *= 10;
+    }
+  }
+
+  while (div >= 1) {
+    for (int x = 0; x < width_; ++x) {
+      std::cout << (x / div) % 10;
+    }
+    div /= 10;
     std::cout << "\n";
   }
 
-  return "";
+  for (int y = 0; y < height_; ++y) {
+    for (int x = 0; x < width_; ++x) {
+      Point p(x, y);
+      std::cout << (Get(p) ? "X" : " ");
+    }
+    std::cout << "  // " << y << "\n";
+  }
 }
