@@ -111,21 +111,21 @@ unsigned char GF32::Mult(unsigned char m1, unsigned char m2) const {
   //   a + b*alpha + c*alpha^2 + d*alpha^3 + e*alpha^4
   //   f + g*alpha + h*alpha^2 + i*alpha^3 + j*alpha^4
   // multiplication is defined as
-  //   (af+bj+ci+dh+eg) +
-  //   (ag+bf+bj+ci+cj+dh+di+eg+eh) * alpha +
-  //   (ah+bg+cf+cj+di+dj+eh+ei) * alpha^2 +
-  //   (ai+bh+cg+df+dj+ei+ej) * alpha^3 +
-  //   (aj+bi+ch+dg+ef+ej) * alpha+4
+  //   (af+bj+ci+dh+eg+ej) +
+  //   (ag+bf+cj+di+eh) * alpha +
+  //   (ah+bg+bj+cf+ci+dh+dj+eg+ei+ej) * alpha^2 +
+  //   (ai+bh+cg+cj+df+di+eh+ej) * alpha^3 +
+  //   (aj+bi+ch+dg+dj+ef+ei) * alpha^4
   // Found by polynomial multiplication and simplification.
-  unsigned char out_a = (a && f) ^ (b && j) ^ (c && i) ^ (d && h) ^ (e && g);
-  unsigned char out_b = (a && g) ^ (b && f) ^ (b && j) ^ (c && i) ^ (c && j) ^
-                        (d && h) ^ (d && i) ^ (e && g) ^ (e && h);
-  unsigned char out_c = (a && h) ^ (b && g) ^ (c && f) ^ (c && j) ^ (d && i) ^
-                        (d && j) ^ (e && h) ^ (e && i);
-  unsigned char out_d = (a && i) ^ (b && h) ^ (c && g) ^ (d && f) ^ (d && j) ^
-                        (e && i) ^ (e && j);
-  unsigned char out_e =
-      (a && j) ^ (b && i) ^ (c && h) ^ (d && g) ^ (e && f) ^ (e && j);
+  unsigned char out_a =
+      (a && f) ^ (b && j) ^ (c && i) ^ (d && h) ^ (e && g) ^ (e && j);
+  unsigned char out_b = (a && g) ^ (b && f) ^ (c && j) ^ (d && i) ^ (e && h);
+  unsigned char out_c = (a && h) ^ (b && g) ^ (b && j) ^ (c && f) ^ (c && i) ^
+                        (d && h) ^ (d && j) ^ (e && g) ^ (e && i) ^ (e && j);
+  unsigned char out_d = (a && i) ^ (b && h) ^ (c && g) ^ (c && j) ^ (d && f) ^
+                        (d && i) ^ (e && h) ^ (e && j);
+  unsigned char out_e = (a && j) ^ (b && i) ^ (c && h) ^ (d && g) ^ (d && j) ^
+                        (e && f) ^ (e && i);
 
   return ((out_e & 1) << 4) | ((out_d & 1) << 3) | ((out_c & 1) << 2) |
          ((out_b & 1) << 1) | (out_a & 1);

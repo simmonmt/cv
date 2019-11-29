@@ -72,18 +72,8 @@ TEST(GF32Test, Exp) {
   EXPECT_EQ(b00000, gf32.Exp(b00000, 2));
   EXPECT_EQ(gf32.PowersOfAlpha()[4], gf32.Exp(gf32.PowersOfAlpha()[2], 2));
 
-  // alpha^10^3 = alpha^30 = alpha^9
-  EXPECT_EQ(gf32.PowersOfAlpha()[9], gf32.Exp(gf32.PowersOfAlpha()[10], 3));
-}
-
-TEST(GF32Test, Enumerate) {
-  unsigned char val = 1;
-  unsigned char mult = 2;
-
-  for (int i = 0; i < 100; ++i) {
-    std::cout << "i=" << i << " => " << int(val) << "\n";
-    val = GF32().Mult(val, mult);
-  }
+  // alpha^10^5 = alpha^50 = alpha^9
+  EXPECT_EQ(gf32.PowersOfAlpha()[19], gf32.Exp(gf32.PowersOfAlpha()[10], 5));
 }
 
 }  // namespace
