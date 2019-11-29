@@ -30,5 +30,10 @@ cc_binary(
 cc_binary(
     name = "gf_gen",
     srcs = ["gf_gen.cc"],
-    deps = ["//qrcode:gf"],
+    deps = [
+        "//qrcode:gf",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+    ],
 )

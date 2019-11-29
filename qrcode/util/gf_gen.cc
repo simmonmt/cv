@@ -1,5 +1,13 @@
+// A utility that generates the alpha power values in GF(2^4) and
+// GF(2^5) as well as the implementation of multiplication for that
+// field.
+
 #include <iostream>
 #include <vector>
+
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/types/optional.h"
 
 namespace {
 
@@ -14,8 +22,67 @@ std::ostream& operator<<(std::ostream& s, const Term& t) {
   return s << t.l << t.r << "A^" << t.y;
 }
 
-void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
-  std::cout << "=== m=" << m << " mult\n";
+std::string PowerString(const std::string& base, int pow) {
+  if (pow == 0) {
+    return "1";
+  } else if (pow == 1) {
+    return base;
+  } else {
+    return absl::StrFormat("%s^%d", base, pow);
+  }
+}
+
+std::string PolyToString(unsigned char p) {
+  std::string out;
+
+  bool first = true;
+  for (int i = 0; i < 8; i++) {
+    if (p & 1) {
+      if (first) {
+        first = false;
+      } else {
+        out = "+ " + out;
+      }
+      out = PowerString("x", i) + out;
+    }
+    p >>= 1;
+  }
+
+  return out;
+}
+
+std::string ToBin(unsigned char v, int lim) {
+  std::string out;
+  for (int i = 0; i < lim; ++i) {
+    out = ((v & 1) ? "1" : "0") + out;
+    v >>= 1;
+  }
+  return out;
+}
+
+absl::optional<std::vector<unsigned char>> GenGFBits(int m, unsigned char p) {
+  unsigned char val = 1;
+  std::vector<unsigned char> bits;
+  int i;
+  for (i = 0; i < 100 && (i == 0 || val != 1); ++i) {
+    bits.push_back(val);
+    val <<= 1;
+    if (val & (1 << m)) {
+      val ^= p;
+    }
+  }
+
+  if (i == 100) {
+    return absl::nullopt;  // the loop didn't terminate
+  }
+
+  return bits;
+}
+
+void GenMultTerms(int m, const char* left, const char* right,
+                  const std::vector<unsigned char>& bits) {
+  std::cout << absl::StrFormat("=== GF(2^%d) multiplication (%*.*s * %*.*s)\n",
+                               m, m, m, left, m, m, right);
 
   std::vector<Term> terms;
   for (int i = 0; i < m; ++i) {
@@ -32,7 +99,7 @@ void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
 
   std::vector<Term> simp;
   for (const Term& t : terms) {
-    char pat = bits[t.y];
+    unsigned char pat = bits[t.y];
     for (int i = 0; i < m; ++i) {
       if (pat & 1) {
         simp.push_back(Term(t.l, t.r, i));
@@ -41,24 +108,32 @@ void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
     }
   }
 
-  std::cout << "simp: ";
+  std::cout << "simplified: ";
   for (const Term& t : simp) {
     std::cout << t << " ";
   }
   std::cout << "\n";
 
+  std::cout << "grouped:\n";
   for (int pow = 0; pow < m; ++pow) {
-    std::cout << pow << " ";
+    std::cout << "(";
+    bool first = true;
     for (const Term& t : simp) {
       if (t.y == pow) {
-        std::cout << t.l << t.r << " ";
+        if (first) {
+          first = false;
+        } else {
+          std::cout << " + ";
+        }
+        std::cout << t.l << t.r;
       }
     }
-    std::cout << "\n";
+    std::cout << ") * " << PowerString("alpha", pow) << "\n";
   }
 
+  std::cout << "calculation of output bits:\n";
   for (int pow = 0; pow < m; ++pow) {
-    std::cout << pow << " ";
+    std::cout << "out_" << left[pow] << " = ";
     bool first = true;
     for (const Term& t : simp) {
       if (t.y == pow) {
@@ -70,24 +145,39 @@ void GenMultTerms(int m, const char* left, const char* right, const int* bits) {
         std::cout << "(" << t.l << "&&" << t.r << ")";
       }
     }
-    std::cout << "\n";
+    std::cout << ";\n";
   }
+}
+
+void PrintGF(int m, unsigned char p) {
+  std::cout << "=== GF(2^" << m << ") poly " << PolyToString(p) << "\n";
+  auto maybe_bits = GenGFBits(m, p);
+  if (!maybe_bits.has_value()) {
+    std::cout << "didn't terminate\n";
+    return;
+  }
+
+  const std::vector<unsigned char> bits = *maybe_bits;
+  for (int i = 0; i < bits.size(); ++i) {
+    std::cout << i << ": " << ToBin(bits[i], 5) << "\n";
+  }
+
+  for (int i = 0; i < bits.size(); ++i) {
+    std::cout << int(bits[i]) << ", ";
+  }
+  std::cout << "\n";
+
+  static constexpr char kVars[] = "abcdefghijklmnopqrstuvwxyz";
+  const char* left = kVars;
+  const char* right = kVars + m;
+
+  GenMultTerms(m, left, right, bits);
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
-  std::cout << "gf_gen\n";
-
-  // Bits for GF(2^4)
-  static const int kGF24Bits[] = {1, 2,  4, 8,  3,  6,  12, 11,
-                                  5, 10, 7, 14, 15, 13, 9};
-  GenMultTerms(4, "abcd", "efgh", kGF24Bits);
-
-  // Bits for GF(2^5)
-  // alpha^5 is a guess based on the 2^4 pattern.
-  static const int kGF25Bits[] = {1, 2, 4, 8, 16, 3, 6, 12, 24};
-  GenMultTerms(5, "abcde", "fghij", kGF25Bits);
-
+  PrintGF(4, 0x13 /* x^4+x+1 */);
+  PrintGF(5, 0x25 /* x^5+x^2+1 */);
   return 0;
 }
