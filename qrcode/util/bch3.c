@@ -172,6 +172,11 @@ generate_gf()
 		index_of[alpha_to[i]] = i;
 	}
 	index_of[0] = -1;
+
+	for (i = 0; i < n; ++i) {
+		printf("gf[%2d]=%d\n", i, alpha_to[i]);
+	}
+
 }
 
 
