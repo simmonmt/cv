@@ -54,26 +54,4 @@ TEST(GF16Test, Exp) {
   EXPECT_EQ(gf16.PowersOfAlpha()[5], gf16.Exp(gf16.PowersOfAlpha()[10], 2));
 }
 
-TEST(GF32Test, Add) {
-  GF32 gf32;
-
-  EXPECT_EQ(b00000, gf32.Add({b00000, b00000}));
-  EXPECT_EQ(b11111, gf32.Add({b01010, b10101}));
-  EXPECT_EQ(b01010, gf32.Add({b11111, b10101}));
-  EXPECT_EQ(b10101, gf32.Add({b11111, b01010}));
-  EXPECT_EQ(b00000, gf32.Add({b11111, b11111}));
-}
-
-TEST(GF32Test, Mult) { TestMult(GF32()); }
-
-TEST(GF32Test, Exp) {
-  GF32 gf32;
-
-  EXPECT_EQ(b00000, gf32.Exp(b00000, 2));
-  EXPECT_EQ(gf32.PowersOfAlpha()[4], gf32.Exp(gf32.PowersOfAlpha()[2], 2));
-
-  // alpha^10^5 = alpha^50 = alpha^9
-  EXPECT_EQ(gf32.PowersOfAlpha()[19], gf32.Exp(gf32.PowersOfAlpha()[10], 5));
-}
-
 }  // namespace

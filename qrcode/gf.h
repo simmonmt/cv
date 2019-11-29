@@ -81,34 +81,4 @@ class GF16 : public GF {
   };
 };
 
-// Functions used to perform operations in GF(32) aka GF(2^5).
-class GF32 : public GF {
- public:
-  ~GF32() override = default;
-
-  const std::vector<unsigned char>& PowersOfAlpha() const override;
-  const std::vector<unsigned char>& Elements() const override;
-
-  unsigned char Add(std::initializer_list<unsigned char> elems) const override;
-  unsigned char Mult(unsigned char m1, unsigned char m2) const override;
-  unsigned char Exp(unsigned char x, int y) const override;
-  unsigned char Power(int y) const override;
-
- private:
-  static constexpr unsigned char kPowersOfAlpha[31] = {
-      1,  2,  4, 8, 16, 5,  10, 20, 13, 26, 17, 7,  14, 28, 29, 31,
-      27, 19, 3, 6, 12, 24, 21, 15, 30, 25, 23, 11, 22, 9,  18,
-  };
-
-  static constexpr unsigned char kElements[32] = {
-      1,  2,  4, 8, 16, 5,  10, 20, 13, 26, 17, 7,  14, 28, 29, 31,
-      27, 19, 3, 6, 12, 24, 21, 15, 30, 25, 23, 11, 22, 9,  18, 0,
-  };
-
-  static constexpr unsigned char kElementsToPowers[32] = {
-      255, 0,  1,  18, 2, 5,  19, 11, 3,  29, 6, 27, 20, 8,  12, 23,
-      4,   10, 30, 17, 7, 22, 28, 26, 21, 25, 9, 16, 13, 14, 24, 15,
-  };
-};
-
 #endif  // _QRCODE_GF_H_
