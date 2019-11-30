@@ -7,7 +7,11 @@
 
 #include "qrcode/qr_extract.h"
 
-struct QRCode {};
+struct QRCode {
+  int version;
+  int height;
+  int width;
+};
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
     const QRCodeArray& array);

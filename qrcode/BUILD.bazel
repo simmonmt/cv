@@ -250,6 +250,7 @@ cc_library(
     hdrs = ["qr_decode.h"],
     deps = [
         ":qr_extract",
+        "@com_google_absl//absl/memory",
         "@com_google_absl//absl/types:variant",
     ],
 )
@@ -257,8 +258,13 @@ cc_library(
 cc_test(
     name = "qr_decode_test",
     srcs = ["qr_decode_test.cc"],
+    data = [
+        ":testdata/straight.txt",
+    ],
     deps = [
         ":qr_decode",
+        ":testutils",
+        "@com_google_absl//absl/types:variant",
         "@com_google_googletest//:gtest_main",
     ],
 )
