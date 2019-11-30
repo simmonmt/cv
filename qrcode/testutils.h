@@ -1,7 +1,10 @@
 #ifndef _QRCODE_TESTUTILS_H_
 #define _QRCODE_TESTUTILS_H_ 1
 
+#include <string>
 #include <vector>
+
+#include "absl/types/variant.h"
 
 #include "qrcode/qr_types.h"
 
@@ -17,5 +20,10 @@ std::vector<unsigned char> MakeRun(std::vector<int> lens);
 // NOTE: radius must not be greater than center.x or center.y.
 std::vector<PositioningPoints> MakeRotatedPositioningPoints(const Point& center,
                                                             double radius);
+
+// Return a QRCodeArray from a file or return an error message explaining the
+// failure.
+absl::variant<std::unique_ptr<QRCodeArray>, std::string>
+ReadQRCodeArrayFromFile(const std::string& path);
 
 #endif  // _QRCODE_TESTUTILS_H_

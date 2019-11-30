@@ -1,7 +1,13 @@
 #include "qrcode/testutils.h"
 
 #include <math.h>
+#include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <iostream>
+#include <string>
+
+#include "absl/memory/memory.h"
 
 std::vector<unsigned char> MakeRun(std::vector<int> lens) {
   std::vector<unsigned char> out;
@@ -38,4 +44,37 @@ std::vector<PositioningPoints> MakeRotatedPositioningPoints(const Point& center,
   }
 
   return out;
+}
+
+absl::variant<std::unique_ptr<QRCodeArray>, std::string>
+ReadQRCodeArrayFromFile(const std::string& path) {
+  std::ifstream input(path);
+  if (!input.is_open()) {
+    return "failed to open input";
+  }
+
+  std::vector<std::string> lines;
+  std::string line;
+  unsigned long width = 0;
+  while (std::getline(input, line)) {
+    width = std::max(width, line.size());
+    lines.push_back(line);
+  }
+
+  auto array = absl::make_unique<QRCodeArray>(lines.size(), width);
+  for (int y = 0; y < lines.size(); ++y) {
+    const std::string& row = lines[y];
+    for (int x = 0; x < width; ++x) {
+      bool val;
+      if (x >= row.size()) {
+        val = false;
+      } else {
+        val = row[x] == 'X';
+      }
+
+      array->Set(Point(x, y), val);
+    }
+  }
+
+  return std::move(array);
 }

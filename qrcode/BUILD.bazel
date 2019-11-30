@@ -233,9 +233,13 @@ cc_test(
     name = "qr_extract_test",
     size = "small",
     srcs = ["qr_extract_test.cc"],
-    data = [":testdata/straight.png"],
+    data = [
+        ":testdata/straight.png",
+        ":testdata/straight.txt",
+    ],
     deps = [
         ":qr_extract",
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -341,7 +345,10 @@ cc_library(
     testonly = 1,
     srcs = ["testutils.cc"],
     hdrs = ["testutils.h"],
-    deps = [":qr_types"],
+    deps = [
+        ":qr_types",
+        "@com_google_absl//absl/types:variant",
+    ],
 )
 
 cc_test(
