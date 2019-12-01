@@ -372,3 +372,9 @@ cc_library(
     testonly = 1,
     hdrs = ["bits.h"],
 )
+
+cc_library(
+    name = "stl_logging",
+    srcs = ["stl_logging.cc"],
+    hdrs = ["stl_logging.h"],
+)
