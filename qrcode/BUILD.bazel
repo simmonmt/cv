@@ -249,8 +249,12 @@ cc_library(
     srcs = ["qr_decode.cc"],
     hdrs = ["qr_decode.h"],
     deps = [
+        ":bch",
+        ":gf",
         ":qr_extract",
+        ":stl_logging",
         "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/types:optional",
         "@com_google_absl//absl/types:variant",
     ],
 )

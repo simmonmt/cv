@@ -32,11 +32,13 @@ TEST_F(QRDecodeTest, Metadata) {
       << absl::get<std::string>(result);
 
   std::unique_ptr<QRCode> qrcode =
-      std::move(absl::get<std::unique_ptr<QRCode>>(Decode(*array_)));
+      std::move(absl::get<std::unique_ptr<QRCode>>(result));
 
   EXPECT_EQ(29, qrcode->height);
   EXPECT_EQ(29, qrcode->width);
   EXPECT_EQ(3, qrcode->version);
+  EXPECT_EQ(5, qrcode->mask_pattern);
+  EXPECT_EQ(QRCode::EC_M, qrcode->error_correction);
 }
 
 }  // namespace
