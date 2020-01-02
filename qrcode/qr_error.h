@@ -26,4 +26,6 @@ struct QRErrorCharacteristics {
 absl::variant<QRErrorCharacteristics::ECC, std::string> GetErrorCharacteristics(
     int version, QRErrorCorrection level);
 
+std::ostream& operator<<(std::ostream& stream, const QRErrorCorrection level);
+
 #endif  // _QRCODE_QR_ERROR_H_
