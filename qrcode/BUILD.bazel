@@ -251,6 +251,7 @@ cc_library(
     deps = [
         ":bch",
         ":gf",
+        ":qr_error",
         ":qr_extract",
         ":stl_logging",
         "@com_google_absl//absl/memory",
@@ -381,4 +382,13 @@ cc_library(
     name = "stl_logging",
     srcs = ["stl_logging.cc"],
     hdrs = ["stl_logging.h"],
+)
+
+cc_library(
+    name = "qr_error",
+    srcs = ["qr_error.cc"],
+    hdrs = ["qr_error.h"],
+    deps = [
+        "@com_google_absl//absl/types:variant",
+    ],
 )
