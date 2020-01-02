@@ -38,7 +38,7 @@ TEST_F(QRDecodeTest, Metadata) {
   EXPECT_EQ(29, qrcode->width);
   EXPECT_EQ(3, qrcode->version);
   EXPECT_EQ(5, qrcode->mask_pattern);
-  EXPECT_EQ(QRCode::EC_M, qrcode->error_correction);
+  EXPECT_EQ(QRECC_M, qrcode->error_correction);
 }
 
 }  // namespace

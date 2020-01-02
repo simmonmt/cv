@@ -5,6 +5,7 @@
 
 #include "absl/types/variant.h"
 
+#include "qrcode/qr_error.h"
 #include "qrcode/qr_extract.h"
 
 struct QRCode {
@@ -13,13 +14,7 @@ struct QRCode {
   int width;
   char mask_pattern;
 
-  enum ErrorCorrection {
-    EC_M,
-    EC_L,
-    EC_H,
-    EC_Q,
-  };
-  ErrorCorrection error_correction;
+  QRErrorCorrection error_correction;
 };
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(

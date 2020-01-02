@@ -87,6 +87,22 @@ absl::variant<std::vector<bool>, std::string> DecodeFormat(
   return std::vector<bool>(format.end() - 5, format.end());
 }
 
+QRErrorCorrection DecodeErrorCorrection(uint format_correction) {
+  switch (format_correction) {
+    case 0:
+      return QRECC_M;
+    case 1:
+      return QRECC_L;
+    case 2:
+      return QRECC_H;
+    case 3:
+      return QRECC_Q;
+    default:
+      // can't happen -- input is only two bits
+      return QRECC_L;
+  }
+}
+
 }  // namespace
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
@@ -118,7 +134,7 @@ absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
 
   qrcode->mask_pattern = (format[2] << 2) | (format[1] << 1) | format[0];
   qrcode->error_correction =
-      static_cast<QRCode::ErrorCorrection>((format[4] << 1) | format[3]);
+      DecodeErrorCorrection((format[4] << 1) | format[3]);
 
   return std::move(qrcode);
 }
