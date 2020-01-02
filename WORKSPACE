@@ -9,13 +9,20 @@ new_local_repository(
 
 git_repository(
     name = "com_google_absl",
-    tag = "20190808",
     remote = "https://github.com/abseil/abseil-cpp.git",
+    # To update: comment out commit and shallow_since, uncomment branch,
+    # build, update commit and shallow_since per the debug warnings.
+    commit = "ad904b6cd3906ddf79878003d92b7bc08d7786ae", 
+    shallow_since = "1576788056 -0500",
+    # branch = "master",
 )
 
-http_archive(
+git_repository(
     name = "com_google_googletest",
-    url = "https://github.com/google/googletest/archive/release-1.10.0.zip",
-    strip_prefix="googletest-release-1.10.0",
-    sha256 = "94c634d499558a76fa649edb13721dce6e98fb1e7018dfaeba3cd7a083945e91",
+    remote = "https://github.com/google/googletest.git",
+    # To update: comment out commit and shallow_since, uncomment branch,
+    # build, update commit and shallow_since per the debug warnings.
+    commit = "306f3754a71d6d1ac644681d3544d06744914228", 
+    shallow_since = "1578001778 -0500",
+    # branch = "master",
 )
