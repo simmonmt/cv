@@ -10,6 +10,7 @@
 #include "qrcode/bch.h"
 #include "qrcode/gf.h"
 #include "qrcode/qr_attributes.h"
+#include "qrcode/qr_decode_utils.h"
 #include "qrcode/stl_logging.h"
 
 namespace {
@@ -154,7 +155,11 @@ absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
                            array->height());
   }
 
+  // Unmask the array (ref algorithm step 11)
+  UnmaskArray(*attributes, array.get(), mask_pattern);
+
   auto qrcode = absl::make_unique<QRCode>();
   qrcode->attributes = std::move(attributes);
+  qrcode->unmasked_array = std::move(array);
   return std::move(qrcode);
 }

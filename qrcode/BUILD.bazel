@@ -266,6 +266,7 @@ cc_library(
         ":gf",
         ":qr_array",
         ":qr_attributes",
+        ":qr_decode_utils",
         ":stl_logging",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
@@ -286,6 +287,27 @@ cc_test(
         ":qr_decode",
         ":testutils",
         "@com_google_absl//absl/types:variant",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "qr_decode_utils",
+    srcs = ["qr_decode_utils.cc"],
+    hdrs = ["qr_decode_utils.h"],
+    deps = [
+        ":qr_array",
+        ":qr_attributes",
+    ],
+)
+
+cc_test(
+    name = "qr_decode_utils_test",
+    size = "small",
+    srcs = ["qr_decode_utils_test.cc"],
+    deps = [
+        ":qr_decode_utils",
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )

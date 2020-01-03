@@ -1,0 +1,113 @@
+#include "qrcode/qr_decode_utils.h"
+
+#include <iostream>
+
+#include "gmock/gmock.h"
+#include "gtest/gtest.h"
+
+#include "qrcode/testutils.h"
+
+namespace {
+
+using ::testing::ElementsAreArray;
+
+void VerifyUnmasking(int version, const std::vector<std::string>& in_strs,
+                     unsigned char mask_pattern,
+                     const std::vector<std::string>& expected_strs) {
+  std::unique_ptr<QRCodeArray> array = ReadQRCodeArrayFromStrings(in_strs);
+
+  auto attributes =
+      absl::get<std::unique_ptr<QRAttributes>>(QRAttributes::New(1, QRECC_L));
+
+  UnmaskArray(*attributes, array.get(), mask_pattern);
+
+  const std::vector<std::string> out_strs = QRCodeArrayToStrings(*array);
+
+  std::cout << "version " << version << " mask " << int(mask_pattern)
+            << " result:\n";
+  for (int i = 0; i < out_strs.size(); i++) {
+    std::cout << i << ":\t" << out_strs[i] << "\n";
+  }
+
+  EXPECT_THAT(out_strs, ElementsAreArray(expected_strs))
+      << "version " << version << " mask " << int(mask_pattern);
+}
+
+TEST(QRDecodeUtilsTest, Masking) {
+  const std::vector<std::string> array_str = {
+      "XXXXXXX  XXXX XXXXXXX",  //
+      "X     X  XXXX X     X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X     X       X     X",  //
+      "XXXXXXX X X X XXXXXXX",  //
+      "                     ",  //
+      "      X              ",  //
+      "XXXXXX XXXXXXXXXXXXXX",  //
+      "XXXXXXXXXXXXXXXXXXXXX",  //
+      "XXXXXX XXXXXXXXXXXXXX",  //
+      "      X              ",  //
+      "                     ",  //
+      "XXXXXXX  X XXX X     ",  //
+      "X     X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X     X  X XXX X     ",  //
+      "XXXXXXX  X XXX X     ",  //
+  };
+
+  const std::vector<std::string> expected_000 = {
+      "XXXXXXX  X X  XXXXXXX",  //
+      "X     X   X X X     X",  //
+      "X XXX X  X X  X XXX X",  //
+      "X XXX X   X X X XXX X",  //
+      "X XXX X  X X  X XXX X",  //
+      "X     X  X X  X     X",  //
+      "XXXXXXX X X X XXXXXXX",  //
+      "         X X         ",  //
+      "      X   X X        ",  //
+      "X X X   X X X X X X X",  //
+      " X X XXX X X X X X X ",  //
+      "X X X   X X X X X X X",  //
+      "X X X X X X X X X X X",  //
+      "         X X X X X X ",  //
+      "XXXXXXX  XXX XXXX X X",  //
+      "X     X     X    X X ",  //
+      "X XXX X  XXX XXXX X X",  //
+      "X XXX X     X    X X ",  //
+      "X XXX X  XXX XXXX X X",  //
+      "X     X     X    X X ",  //
+      "XXXXXXX  XXX XXXX X X",  //
+  };
+
+  const std::vector<std::string> expected_111 = {
+      "XXXXXXX  X X  XXXXXXX",  //
+      "X     X     X X     X",  //
+      "X XXX X  X    X XXX X",  //
+      "X XXX X   X X X XXX X",  //
+      "X XXX X  XXX  X XXX X",  //
+      "X     X  X    X     X",  //
+      "XXXXXXX X X X XXXXXXX",  //
+      "         XXX         ",  //
+      "      X   XXX        ",  //
+      "X X X   X X X X X X X",  //
+      "   XXXX  XXX   XXX   ",  //
+      "X   XX    XXX   XXX  ",  //
+      "X X X X X X X X X X X",  //
+      "         XXX   XXX   ",  //
+      "XXXXXXX  XX  X XXXX  ",  //
+      "X     X     X    X X ",  //
+      "X XXX X  X X  XX  XXX",  //
+      "X XXX X    XX X    XX",  //
+      "X XXX X  XXX XXXX X X",  //
+      "X     X   X XX  XX   ",  //
+      "XXXXXXX  XX  X XXXX  ",  //
+  };
+
+  VerifyUnmasking(1, array_str, 0, expected_000);
+  VerifyUnmasking(1, array_str, 7, expected_111);
+}
+
+}  // namespace
