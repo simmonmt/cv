@@ -17,17 +17,6 @@ class QRCodeArray {
   void Set(Point p, bool val);
   bool Get(Point p) const;
 
-  enum PointType {
-    TYPE_POSITION_DETECTION_PATTERN,  // Includes separators
-    TYPE_FORMAT_INFORMATION,
-    TYPE_VERSION_INFORMATION,
-    TYPE_TIMING_PATTERN,
-    TYPE_ALIGNMENT_PATTERN,
-    TYPE_DATA,
-  };
-
-  PointType Type(Point p) const;
-
   void Dump() const;
 
  private:
