@@ -253,7 +253,6 @@ cc_library(
     deps = [
         ":bch",
         ":gf",
-        ":qr_error",
         ":qr_error_characteristics",
         ":qr_extract",
         ":stl_logging",
@@ -273,25 +272,6 @@ cc_test(
         ":qr_decode",
         ":testutils",
         "@com_google_absl//absl/types:variant",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "qr_decode_utils",
-    srcs = ["qr_decode_utils.cc"],
-    hdrs = ["qr_decode_utils.h"],
-)
-
-cc_test(
-    name = "qr_decode_utils_test",
-    size = "small",
-    srcs = ["qr_decode_utils_test.cc"],
-    deps = [
-        ":bits",
-        ":gf",
-        ":qr_decode_utils",
-        "@com_google_absl//absl/strings:str_format",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -385,26 +365,6 @@ cc_library(
     name = "stl_logging",
     srcs = ["stl_logging.cc"],
     hdrs = ["stl_logging.h"],
-)
-
-cc_library(
-    name = "qr_error",
-    srcs = ["qr_error.cc"],
-    hdrs = ["qr_error.h"],
-    deps = [
-        "@com_google_absl//absl/strings:str_format",
-        "@com_google_absl//absl/types:variant",
-    ],
-)
-
-cc_test(
-    name = "qr_error_test",
-    size = "small",
-    srcs = ["qr_error_test.cc"],
-    deps = [
-        ":qr_error",
-        "@com_google_googletest//:gtest_main",
-    ],
 )
 
 go_binary(

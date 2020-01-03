@@ -1,4 +1,0 @@
-#ifndef _QRCODE_QR_DECODE_UTILS_H_
-#define _QRCODE_QR_DECODE_UTILS_H_ 1
-
-#endif  // _QRCODE_QR_DECODE_UTILS_H_
