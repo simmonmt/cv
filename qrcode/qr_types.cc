@@ -27,6 +27,8 @@ bool QRCodeArray::Get(Point p) const {
   return array_[p.y * width_ + p.x];
 }
 
+QRCodeArray::PointType QRCodeArray::Type(Point p) const {}
+
 void QRCodeArray::Dump() const {
   int num_rows = 0;
   int div = 1;
