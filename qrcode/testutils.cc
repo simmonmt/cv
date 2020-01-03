@@ -78,3 +78,38 @@ ReadQRCodeArrayFromFile(const std::string& path) {
 
   return std::move(array);
 }
+
+std::unique_ptr<QRCodeArray> ReadQRCodeArrayFromStrings(
+    const std::vector<std::string> lines) {
+  auto array = absl::make_unique<QRCodeArray>(lines.size(), lines.size());
+
+  for (int y = 0; y < lines.size(); ++y) {
+    const std::string& row = lines[y];
+    for (int x = 0; x < row.size(); ++x) {
+      bool val;
+      if (x >= lines.size()) {
+        val = false;
+      } else {
+        val = row[x] == 'X';
+      }
+
+      array->Set(Point(x, y), val);
+    }
+  }
+
+  return array;
+}
+
+std::vector<std::string> QRCodeArrayToStrings(const QRCodeArray& array) {
+  std::vector<std::string> out;
+
+  for (int y = 0; y < array.height(); ++y) {
+    std::string line;
+    for (int x = 0; x < array.width(); ++x) {
+      line += array.Get(Point(x, y)) ? "X" : " ";
+    }
+    out.push_back(line);
+  }
+
+  return out;
+}
