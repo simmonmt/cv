@@ -1,5 +1,7 @@
 package(default_visibility = ["//qrcode:__subpackages__"])
 
+load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+
 cc_binary(
     name = "qrcode",
     srcs = ["qr_main.cc"],
@@ -400,6 +402,51 @@ cc_test(
     srcs = ["qr_error_test.cc"],
     deps = [
         ":qr_error",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+go_binary(
+    name = "qr_error_characteristics_converter",
+    srcs = ["qr_error_characteristics_converter.go"],
+)
+
+genrule(
+    name = "qr_error_characteristics_genrule",
+    srcs = ["qr_error_characteristics_data.tsv"],
+    outs = ["qr_error_characteristics_data.h"],
+    cmd = "./$(location qr_error_characteristics_converter) " +
+          "--header_guard $$(echo $(rootpath qr_error_characteristics_data.h) | " +
+          "                    tr '[a-z]' '[A-Z]' | " +
+          "                    sed -e 's/^/_/' -e 's/$$/_/' -e 's/[./]/_/g') " +
+          "--input $(location qr_error_characteristics_data.tsv) " +
+          "--output $@",
+    tools = [":qr_error_characteristics_converter"],
+)
+
+cc_library(
+    name = "qr_error_characteristics",
+    srcs = [
+        "qr_error_characteristics.cc",
+        "qr_error_characteristics.impl.h",
+        "qr_error_characteristics_data.h",
+        "qr_error_characteristics_types.cc",
+    ],
+    hdrs = [
+        "qr_error_characteristics.h",
+        "qr_error_characteristics_types.h",
+    ],
+    deps = [
+        "@com_google_absl//absl/types:variant",
+    ],
+)
+
+cc_test(
+    name = "qr_error_characteristics_test",
+    size = "small",
+    srcs = ["qr_error_characteristics_test.cc"],
+    deps = [
+        ":qr_error_characteristics",
         "@com_google_googletest//:gtest_main",
     ],
 )
