@@ -254,6 +254,7 @@ cc_library(
         ":bch",
         ":gf",
         ":qr_error",
+        ":qr_error_characteristics",
         ":qr_extract",
         ":stl_logging",
         "@com_google_absl//absl/memory",
