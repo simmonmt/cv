@@ -3,6 +3,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+#include "qrcode/qr_array.h"
 #include "qrcode/testutils.h"
 
 namespace {

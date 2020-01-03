@@ -149,11 +149,20 @@ cc_library(
     deps = [":point"],
 )
 
-cc_test(
-    name = "qr_types_test",
-    srcs = ["qr_types_test.cc"],
+cc_library(
+    name = "qr_array",
+    srcs = ["qr_array.cc"],
+    hdrs = ["qr_array.h"],
     deps = [
-        ":qr_types",
+        ":point",
+    ],
+)
+
+cc_test(
+    name = "qr_array_test",
+    srcs = ["qr_array_test.cc"],
+    deps = [
+        ":qr_array",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -221,6 +230,7 @@ cc_library(
     deps = [
         ":debug_image",
         ":pixel_iterator",
+        ":qr_array",
         ":qr_normalize",
         ":qr_types",
         ":runner",
@@ -240,6 +250,7 @@ cc_test(
         ":testdata/straight.txt",
     ],
     deps = [
+        ":qr_array",
         ":qr_extract",
         ":testutils",
         "@com_google_googletest//:gtest_main",
@@ -253,6 +264,7 @@ cc_library(
     deps = [
         ":bch",
         ":gf",
+        ":qr_array",
         ":qr_error_characteristics",
         ":qr_extract",
         ":stl_logging",
@@ -269,6 +281,7 @@ cc_test(
         ":testdata/straight.txt",
     ],
     deps = [
+        ":qr_array",
         ":qr_decode",
         ":testutils",
         "@com_google_absl//absl/types:variant",
@@ -340,6 +353,7 @@ cc_library(
     srcs = ["testutils.cc"],
     hdrs = ["testutils.h"],
     deps = [
+        ":qr_array",
         ":qr_types",
         "@com_google_absl//absl/types:variant",
     ],

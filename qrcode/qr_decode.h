@@ -5,6 +5,7 @@
 
 #include "absl/types/variant.h"
 
+#include "qrcode/qr_array.h"
 #include "qrcode/qr_error_characteristics_types.h"
 #include "qrcode/qr_extract.h"
 

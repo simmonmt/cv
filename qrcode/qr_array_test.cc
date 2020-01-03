@@ -1,4 +1,4 @@
-#include "qrcode/qr_types.h"
+#include "qrcode/qr_array.h"
 
 #include "gtest/gtest.h"
 
