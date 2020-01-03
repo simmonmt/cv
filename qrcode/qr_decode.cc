@@ -4,9 +4,12 @@
 #include <memory>
 
 #include "absl/memory/memory.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 
 #include "qrcode/bch.h"
 #include "qrcode/gf.h"
+#include "qrcode/qr_attributes.h"
 #include "qrcode/stl_logging.h"
 
 namespace {
@@ -106,35 +109,52 @@ QRErrorCorrection DecodeErrorCorrection(uint format_correction) {
 }  // namespace
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
-    const QRCodeArray& array) {
-  auto qrcode = absl::make_unique<QRCode>();
-  qrcode->width = array.width();
-  qrcode->height = array.height();
-
+    std::unique_ptr<QRCodeArray> array) {
   // Version decode (ref algorithm steps 5 and 6)
   //   ((D/X)-10)/4, with X=1, D  measured from positioning point X centers
   //   (i.e. left+3).
-  qrcode->version = ((array.width() - 6) - 10) / 4;
-  if (qrcode->version > 6) {
+  const int version = ((array->width() - 6) - 10) / 4;
+  if (version > 6) {
     // TODO: implement
     return "large version decoding unimplemented";
   }
 
-  // Ref algorithm step 8 skipped because we don't do version > 6
+  // Ref algorithm step 8 (finding the sampling grids using alignment patterns)
+  // skipped because we don't do version > 6. Also it would be in QRCodeArray
+  // construction.
 
   // Ref algorithm step 9 (sampling) skipped because we did it during
   // QRCodeArray construction.
 
   // Format decode (ref algorithm step 10)
-  auto format_result = DecodeFormat(array);
+  auto format_result = DecodeFormat(*array);
   if (absl::holds_alternative<std::string>(format_result)) {
     return "failed to decode format: " + absl::get<std::string>(format_result);
   }
   const std::vector<bool>& format = absl::get<std::vector<bool>>(format_result);
 
-  qrcode->mask_pattern = (format[2] << 2) | (format[1] << 1) | format[0];
-  qrcode->error_correction =
+  const unsigned char mask_pattern =
+      (format[2] << 2) | (format[1] << 1) | format[0];
+  const QRErrorCorrection ecc_level =
       DecodeErrorCorrection((format[4] << 1) | format[3]);
 
+  auto attributes_result = QRAttributes::New(version, ecc_level);
+  if (absl::holds_alternative<std::string>(attributes_result)) {
+    return absl::StrCat("failed to build attributes object: ",
+                        absl::get<std::string>(attributes_result));
+  }
+  auto attributes =
+      std::move(absl::get<std::unique_ptr<QRAttributes>>(attributes_result));
+
+  if (attributes->modules_per_side() != array->width() ||
+      attributes->modules_per_side() != array->height()) {
+    return absl::StrFormat("version %d wants %d-module sides, but have %dx%d",
+                           attributes->version(),
+                           attributes->modules_per_side(), array->width(),
+                           array->height());
+  }
+
+  auto qrcode = absl::make_unique<QRCode>();
+  qrcode->attributes = std::move(attributes);
   return std::move(qrcode);
 }

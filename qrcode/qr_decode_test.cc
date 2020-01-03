@@ -28,18 +28,16 @@ class QRDecodeTest : public ::testing::Test {
 };
 
 TEST_F(QRDecodeTest, Metadata) {
-  auto result = Decode(*array_);
+  auto result = Decode(std::move(array_));
   ASSERT_FALSE(absl::holds_alternative<std::string>(result))
       << absl::get<std::string>(result);
 
   std::unique_ptr<QRCode> qrcode =
       std::move(absl::get<std::unique_ptr<QRCode>>(result));
 
-  EXPECT_EQ(29, qrcode->height);
-  EXPECT_EQ(29, qrcode->width);
-  EXPECT_EQ(3, qrcode->version);
-  EXPECT_EQ(5, qrcode->mask_pattern);
-  EXPECT_EQ(QRECC_M, qrcode->error_correction);
+  EXPECT_EQ(29, qrcode->attributes->modules_per_side());
+  EXPECT_EQ(3, qrcode->attributes->version());
+  EXPECT_EQ(QRECC_M, qrcode->attributes->ecc_level());
 }
 
 }  // namespace

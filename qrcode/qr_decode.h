@@ -6,19 +6,14 @@
 #include "absl/types/variant.h"
 
 #include "qrcode/qr_array.h"
-#include "qrcode/qr_error_characteristics_types.h"
-#include "qrcode/qr_extract.h"
+#include "qrcode/qr_attributes.h"
 
 struct QRCode {
-  int version;
-  int height;
-  int width;
-  char mask_pattern;
-
-  QRErrorCorrection error_correction;
+  std::unique_ptr<QRAttributes> attributes;
+  std::unique_ptr<QRCodeArray> unmasked_array;
 };
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
-    const QRCodeArray& array);
+    std::unique_ptr<QRCodeArray> array);
 
 #endif  // _QRCODE_QR_DECODE_H_
