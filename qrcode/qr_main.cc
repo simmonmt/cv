@@ -9,6 +9,7 @@
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/opencv.hpp"
 
+#include "qrcode/cv_utils.h"
 #include "qrcode/debug_image.h"
 #include "qrcode/point.h"
 #include "qrcode/qr_locate.h"
@@ -20,26 +21,6 @@ ABSL_FLAG(std::string, input, "", "Input file");
 ABSL_FLAG(bool, display, false, "Display the B&W image");
 ABSL_FLAG(int, row, -1, "Use this row only for the first scan");
 
-namespace {
-
-int readBwImage(const std::string& path, cv::OutputArray out) {
-  cv::Mat input = cv::imread(path, cv::IMREAD_COLOR);
-  if (!input.data) {
-    return -1;
-  }
-
-  cv::Mat gray;
-  cv::cvtColor(input, gray, cv::COLOR_BGR2GRAY);
-
-  // NOTE: This needs to use the same threshold as the threshold()
-  // call in ExtractCode, which is awkward.
-  cv::threshold(gray, out, 127, 255, cv::THRESH_BINARY);
-
-  return 0;
-}
-
-}  // namespace
-
 int main(int argc, char** argv) {
   absl::ParseCommandLine(argc, argv);
 
@@ -49,17 +30,8 @@ int main(int argc, char** argv) {
   }
 
   cv::Mat image;
-  if (readBwImage(absl::GetFlag(FLAGS_input), image) < 0) {
+  if (!ReadBwImage(absl::GetFlag(FLAGS_input), image)) {
     std::cerr << "failed to read image\n";
-    return -1;
-  }
-
-  if (image.depth() != CV_8U || image.channels() != 1 ||
-      !image.isContinuous()) {
-    std::cerr << absl::StrFormat(
-        "expected depth %d, got %d, chans 1, got %d, "
-        "continuous, got %d\n",
-        CV_8U, image.depth(), image.channels(), image.isContinuous());
     return -1;
   }
 
