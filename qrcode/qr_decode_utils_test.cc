@@ -34,31 +34,7 @@ void VerifyUnmasking(int version, const std::vector<std::string>& in_strs,
 }
 
 TEST(QRDecodeUtilsTest, Masking) {
-  const std::vector<std::string> array_str = {
-      "XXXXXXX  XXXX XXXXXXX",  //
-      "X     X  XXXX X     X",  //
-      "X XXX X  XXXX X XXX X",  //
-      "X XXX X  XXXX X XXX X",  //
-      "X XXX X  XXXX X XXX X",  //
-      "X     X       X     X",  //
-      "XXXXXXX X X X XXXXXXX",  //
-      "                     ",  //
-      "      X              ",  //
-      "XXXXXX XXXXXXXXXXXXXX",  //
-      "XXXXXXXXXXXXXXXXXXXXX",  //
-      "XXXXXX XXXXXXXXXXXXXX",  //
-      "      X              ",  //
-      "                     ",  //
-      "XXXXXXX  X XXX X     ",  //
-      "X     X  X XXX X     ",  //
-      "X XXX X  X XXX X     ",  //
-      "X XXX X  X XXX X     ",  //
-      "X XXX X  X XXX X     ",  //
-      "X     X  X XXX X     ",  //
-      "XXXXXXX  X XXX X     ",  //
-  };
-
-  const std::vector<std::string> expected_000 = {
+  const std::vector<std::string> masked_000 = {
       "XXXXXXX  X X  XXXXXXX",  //
       "X     X   X X X     X",  //
       "X XXX X  X X  X XXX X",  //
@@ -82,7 +58,7 @@ TEST(QRDecodeUtilsTest, Masking) {
       "XXXXXXX  XXX XXXX X X",  //
   };
 
-  const std::vector<std::string> expected_111 = {
+  const std::vector<std::string> masked_111 = {
       "XXXXXXX  X X  XXXXXXX",  //
       "X     X     X X     X",  //
       "X XXX X  X    X XXX X",  //
@@ -106,8 +82,32 @@ TEST(QRDecodeUtilsTest, Masking) {
       "XXXXXXX  XX  X XXXX  ",  //
   };
 
-  VerifyUnmasking(1, array_str, 0, expected_000);
-  VerifyUnmasking(1, array_str, 7, expected_111);
+  const std::vector<std::string> expected = {
+      "XXXXXXX  XXXX XXXXXXX",  //
+      "X     X  XXXX X     X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X XXX X  XXXX X XXX X",  //
+      "X     X       X     X",  //
+      "XXXXXXX X X X XXXXXXX",  //
+      "                     ",  //
+      "      X              ",  //
+      "XXXXXX XXXXXXXXXXXXXX",  //
+      "XXXXXXXXXXXXXXXXXXXXX",  //
+      "XXXXXX XXXXXXXXXXXXXX",  //
+      "      X              ",  //
+      "                     ",  //
+      "XXXXXXX  X XXX X     ",  //
+      "X     X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X XXX X  X XXX X     ",  //
+      "X     X  X XXX X     ",  //
+      "XXXXXXX  X XXX X     ",  //
+  };
+
+  VerifyUnmasking(1, masked_000, 0, expected);
+  VerifyUnmasking(1, masked_111, 7, expected);
 }
 
 }  // namespace
