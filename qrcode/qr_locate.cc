@@ -43,7 +43,6 @@ absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
   }
 
   const std::vector<Point> clusters = std::move(maybe_clusters.value());
-  std::cout << "#clustered candidates found: " << clusters.size() << "\n";
 
   absl::optional<PositioningPoints> maybe_positioning_points =
       OrderPositioningPoints(clusters[0], clusters[1], clusters[2]);
