@@ -67,7 +67,7 @@ ReadQRCodeArrayFromFile(const std::string& path) {
     for (int x = 0; x < width; ++x) {
       bool val;
       if (x >= row.size()) {
-        val = false;
+        val = false;  // editors trim trailing spaces
       } else {
         val = row[x] == 'X';
       }
