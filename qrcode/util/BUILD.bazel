@@ -37,3 +37,19 @@ cc_binary(
         "@com_google_absl//absl/types:optional",
     ],
 )
+
+cc_binary(
+    name = "extractor",
+    srcs = ["extractor.cc"],
+    deps = [
+        "//qrcode:cv_utils",
+        "//qrcode:point",
+        "//qrcode:qr_extract",
+        "//qrcode:qr_locate",
+        "//qrcode:qr_normalize",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/types:variant",
+        "@opencv",
+    ],
+)
