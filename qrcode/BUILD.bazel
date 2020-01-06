@@ -263,8 +263,6 @@ cc_library(
     srcs = ["qr_decode.cc"],
     hdrs = ["qr_decode.h"],
     deps = [
-        ":bch",
-        ":gf",
         ":qr_array",
         ":qr_attributes",
         ":qr_decode_utils",
@@ -297,8 +295,11 @@ cc_library(
     srcs = ["qr_decode_utils.cc"],
     hdrs = ["qr_decode_utils.h"],
     deps = [
+        ":bch",
+        ":gf",
         ":qr_array",
         ":qr_attributes",
+        "@com_google_absl//absl/types:variant",
     ],
 )
 
