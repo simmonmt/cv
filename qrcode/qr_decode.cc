@@ -9,7 +9,6 @@
 
 #include "qrcode/qr_attributes.h"
 #include "qrcode/qr_decode_utils.h"
-#include "qrcode/stl_logging.h"
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
     std::unique_ptr<QRCodeArray> array) {
