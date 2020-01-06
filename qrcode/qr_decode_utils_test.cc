@@ -11,29 +11,38 @@ namespace {
 
 using ::testing::ElementsAreArray;
 
-void VerifyUnmasking(int version, const std::vector<std::string>& in_strs,
-                     unsigned char mask_pattern,
-                     const std::vector<std::string>& expected_strs) {
-  std::unique_ptr<QRCodeArray> array = ReadQRCodeArrayFromStrings(in_strs);
+class UnmaskingTest : public ::testing::Test {
+ public:
+  void VerifyUnmasking(int version, std::unique_ptr<QRCodeArray> array,
+                       unsigned char mask_pattern,
+                       const std::vector<std::string>& expected_strs) {
+    auto attributes =
+        absl::get<std::unique_ptr<QRAttributes>>(QRAttributes::New(1, QRECC_L));
 
-  auto attributes =
-      absl::get<std::unique_ptr<QRAttributes>>(QRAttributes::New(1, QRECC_L));
+    UnmaskArray(*attributes, array.get(), mask_pattern);
 
-  UnmaskArray(*attributes, array.get(), mask_pattern);
+    const std::vector<std::string> out_strs = QRCodeArrayToStrings(*array);
 
-  const std::vector<std::string> out_strs = QRCodeArrayToStrings(*array);
+    std::cout << "version " << version << " mask " << int(mask_pattern)
+              << " result:\n";
+    for (int i = 0; i < out_strs.size(); i++) {
+      std::cout << i << ":\t" << out_strs[i] << "\n";
+    }
 
-  std::cout << "version " << version << " mask " << int(mask_pattern)
-            << " result:\n";
-  for (int i = 0; i < out_strs.size(); i++) {
-    std::cout << i << ":\t" << out_strs[i] << "\n";
+    EXPECT_THAT(out_strs, ElementsAreArray(expected_strs))
+        << "version " << version << " mask " << int(mask_pattern);
   }
 
-  EXPECT_THAT(out_strs, ElementsAreArray(expected_strs))
-      << "version " << version << " mask " << int(mask_pattern);
-}
+  void VerifyUnmasking(int version, const std::vector<std::string>& in_strs,
+                       unsigned char mask_pattern,
+                       const std::vector<std::string>& expected_strs) {
+    std::unique_ptr<QRCodeArray> in = ReadQRCodeArrayFromStrings(in_strs);
 
-TEST(QRDecodeUtilsTest, Masking) {
+    VerifyUnmasking(version, std::move(in), mask_pattern, expected_strs);
+  }
+};
+
+TEST_F(UnmaskingTest, Test1) {
   const std::vector<std::string> masked_000 = {
       "XXXXXXX  X X  XXXXXXX",  //
       "X     X   X X X     X",  //
