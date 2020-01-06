@@ -16,12 +16,8 @@ constexpr char kTestStraightRelPath[] = "qrcode/testdata/straight.txt";
 class QRDecodeTest : public ::testing::Test {
  public:
   void SetUp() override {
-    auto result = ReadQRCodeArrayFromFile(kTestStraightRelPath);
-    if (absl::holds_alternative<std::string>(result)) {
-      ASSERT_TRUE(false) << "read returned error: "
-                         << absl::get<std::string>(result);
-    }
-    array_ = std::move(absl::get<std::unique_ptr<QRCodeArray>>(result));
+    ASSIGN_OR_ASSERT(array_, ReadQRCodeArrayFromFile(kTestStraightRelPath),
+                     "read returned error");
   }
 
   std::unique_ptr<QRCodeArray> array_;
