@@ -307,6 +307,9 @@ cc_test(
     name = "qr_decode_utils_test",
     size = "small",
     srcs = ["qr_decode_utils_test.cc"],
+    data = [
+        ":testdata/spec_example_1m.txt",
+    ],
     deps = [
         ":qr_decode_utils",
         ":testutils",
