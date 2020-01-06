@@ -485,3 +485,23 @@ cc_library(
         "@opencv",
     ],
 )
+
+cc_library(
+    name = "array_walker",
+    srcs = ["array_walker.cc"],
+    hdrs = ["array_walker.h"],
+    deps = [
+        ":point",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "array_walker_test",
+    size = "small",
+    srcs = ["array_walker_test.cc"],
+    deps = [
+        ":array_walker",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
