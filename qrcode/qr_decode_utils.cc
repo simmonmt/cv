@@ -20,8 +20,6 @@ std::vector<bool> FindOneFormatCopy(const QRCodeArray& array,
     vals[i] = array.Get(point);
   }
 
-  vals = {0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1};
-
   return vals;
 }
 

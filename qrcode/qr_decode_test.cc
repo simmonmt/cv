@@ -33,7 +33,7 @@ TEST_F(QRDecodeTest, Metadata) {
 
   EXPECT_EQ(29, qrcode->attributes->modules_per_side());
   EXPECT_EQ(3, qrcode->attributes->version());
-  EXPECT_EQ(QRECC_M, qrcode->attributes->ecc_level());
+  EXPECT_EQ(QRECC_L, qrcode->attributes->ecc_level());
 }
 
 }  // namespace
