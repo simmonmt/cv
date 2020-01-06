@@ -13,6 +13,8 @@ using ::testing::ElementsAreArray;
 
 constexpr char kTestDataSpecExamplePath[] =
     "qrcode/testdata/spec_example_1m.txt";
+constexpr char kTestDataSpecExampleUnmaskedPath[] =
+    "qrcode/testdata/spec_example_1m_unmasked.txt";
 
 class DecodeFormatTest : public ::testing::Test {
  public:
@@ -139,6 +141,23 @@ TEST_F(UnmaskingTest, Test1) {
 
   VerifyUnmasking(1, masked_000, 0, expected);
   VerifyUnmasking(1, masked_111, 7, expected);
+}
+
+TEST_F(UnmaskingTest, Test2) {
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> masked,
+                   ReadQRCodeArrayFromFile(kTestDataSpecExamplePath),
+                   "masked read returned error");
+
+  ASSIGN_OR_ASSERT(const QRFormat format, DecodeFormat(*masked),
+                   "decode returned error");
+  std::cout << "ecc " << format.ecc_level << " mask " << format.mask_pattern
+            << "\n";
+
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> unmasked,
+                   ReadQRCodeArrayFromFile(kTestDataSpecExampleUnmaskedPath),
+                   "unmasked read returned error");
+
+  VerifyUnmasking(1, std::move(masked), 3, QRCodeArrayToStrings(*unmasked));
 }
 
 }  // namespace

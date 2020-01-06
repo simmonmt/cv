@@ -8,7 +8,7 @@
 
 struct QRFormat {
   QRErrorCorrection ecc_level;
-  unsigned char mask_pattern;
+  unsigned mask_pattern;
 };
 
 absl::variant<QRFormat, std::string> DecodeFormat(const QRCodeArray& array);
