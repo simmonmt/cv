@@ -13,8 +13,6 @@ using ::testing::ElementsAreArray;
 
 constexpr char kTestDataSpecExamplePath[] =
     "qrcode/testdata/spec_example_1m.txt";
-constexpr char kTestDataSpecExampleUnmaskedPath[] =
-    "qrcode/testdata/spec_example_1m_unmasked.txt";
 
 class DecodeFormatTest : public ::testing::Test {
  public:
@@ -66,53 +64,94 @@ class UnmaskingTest : public ::testing::Test {
   }
 };
 
-TEST_F(UnmaskingTest, Test1) {
-  const std::vector<std::string> masked_000 = {
-      "XXXXXXX  X X  XXXXXXX",  //
-      "X     X   X X X     X",  //
-      "X XXX X  X X  X XXX X",  //
-      "X XXX X   X X X XXX X",  //
-      "X XXX X  X X  X XXX X",  //
-      "X     X  X X  X     X",  //
-      "XXXXXXX X X X XXXXXXX",  //
-      "         X X         ",  //
-      "      X   X X        ",  //
-      "X X X   X X X X X X X",  //
-      " X X XXX X X X X X X ",  //
-      "X X X   X X X X X X X",  //
-      "X X X X X X X X X X X",  //
-      "         X X X X X X ",  //
-      "XXXXXXX  XXX XXXX X X",  //
-      "X     X     X    X X ",  //
-      "X XXX X  XXX XXXX X X",  //
-      "X XXX X     X    X X ",  //
-      "X XXX X  XXX XXXX X X",  //
-      "X     X     X    X X ",  //
-      "XXXXXXX  XXX XXXX X X",  //
+// TODO: Add tests for missing mask patterns.
+// We have 000, 011, 111. Need 001, 010, 100, 101, 110.
+
+TEST_F(UnmaskingTest, Test) {
+  struct TestCase {
+    std::vector<std::string> masked;
+    int mask_pattern;
   };
 
-  const std::vector<std::string> masked_111 = {
-      "XXXXXXX  X X  XXXXXXX",  //
-      "X     X     X X     X",  //
-      "X XXX X  X    X XXX X",  //
-      "X XXX X   X X X XXX X",  //
-      "X XXX X  XXX  X XXX X",  //
-      "X     X  X    X     X",  //
-      "XXXXXXX X X X XXXXXXX",  //
-      "         XXX         ",  //
-      "      X   XXX        ",  //
-      "X X X   X X X X X X X",  //
-      "   XXXX  XXX   XXX   ",  //
-      "X   XX    XXX   XXX  ",  //
-      "X X X X X X X X X X X",  //
-      "         XXX   XXX   ",  //
-      "XXXXXXX  XX  X XXXX  ",  //
-      "X     X     X    X X ",  //
-      "X XXX X  X X  XX  XXX",  //
-      "X XXX X    XX X    XX",  //
-      "X XXX X  XXX XXXX X X",  //
-      "X     X   X XX  XX   ",  //
-      "XXXXXXX  XX  X XXXX  ",  //
+  const TestCase kTestCases[] = {
+      {
+          {
+              "XXXXXXX  X X  XXXXXXX",  //
+              "X     X   X X X     X",  //
+              "X XXX X  X X  X XXX X",  //
+              "X XXX X   X X X XXX X",  //
+              "X XXX X  X X  X XXX X",  //
+              "X     X  X X  X     X",  //
+              "XXXXXXX X X X XXXXXXX",  //
+              "         X X         ",  //
+              "      X   X X        ",  //
+              "X X X   X X X X X X X",  //
+              " X X XXX X X X X X X ",  //
+              "X X X   X X X X X X X",  //
+              "X X X X X X X X X X X",  //
+              "         X X X X X X ",  //
+              "XXXXXXX  XXX XXXX X X",  //
+              "X     X     X    X X ",  //
+              "X XXX X  XXX XXXX X X",  //
+              "X XXX X     X    X X ",  //
+              "X XXX X  XXX XXXX X X",  //
+              "X     X     X    X X ",  //
+              "XXXXXXX  XXX XXXX X X",  //
+          },
+          0b000,
+      },
+      {
+          {
+              "XXXXXXX   XX  XXXXXXX",  //
+              "X     X  XX X X     X",  //
+              "X XXX X  X XX X XXX X",  //
+              "X XXX X   XX  X XXX X",  //
+              "X XXX X  XX X X XXX X",  //
+              "X     X   X   X     X",  //
+              "XXXXXXX X X X XXXXXXX",  //
+              "           X         ",  //
+              "      X   X          ",  //
+              " XX XX XX XX XX XX XX",  //
+              "XX XX XX XX XX XX XX ",  //
+              "X XX X  XX XX XX XX X",  //
+              "X  X  X  X  X  X  X  ",  //
+              "           X  X  X  X",  //
+              "XXXXXXX  XXXX  XX  X ",  //
+              "X     X    X X    X  ",  //
+              "X XXX X  X  XXXX X  X",  //
+              "X XXX X  XXXX  XX  X ",  //
+              "X XXX X    X X    X  ",  //
+              "X     X  X  XXXX X  X",  //
+              "XXXXXXX  XXXX  XX  X ",  //
+          },
+          0b011,
+      },
+      {
+          {
+              "XXXXXXX  X X  XXXXXXX",  //
+              "X     X     X X     X",  //
+              "X XXX X  X    X XXX X",  //
+              "X XXX X   X X X XXX X",  //
+              "X XXX X  XXX  X XXX X",  //
+              "X     X  X    X     X",  //
+              "XXXXXXX X X X XXXXXXX",  //
+              "         XXX         ",  //
+              "      X   XXX        ",  //
+              "X X X   X X X X X X X",  //
+              "   XXXX  XXX   XXX   ",  //
+              "X   XX    XXX   XXX  ",  //
+              "X X X X X X X X X X X",  //
+              "         XXX   XXX   ",  //
+              "XXXXXXX  XX  X XXXX  ",  //
+              "X     X     X    X X ",  //
+              "X XXX X  X X  XX  XXX",  //
+              "X XXX X    XX X    XX",  //
+              "X XXX X  XXX XXXX X X",  //
+              "X     X   X XX  XX   ",  //
+              "XXXXXXX  XX  X XXXX  ",  //
+          },
+          0b111,
+      },
   };
 
   const std::vector<std::string> expected = {
@@ -139,25 +178,9 @@ TEST_F(UnmaskingTest, Test1) {
       "XXXXXXX  X XXX X     ",  //
   };
 
-  VerifyUnmasking(1, masked_000, 0, expected);
-  VerifyUnmasking(1, masked_111, 7, expected);
-}
-
-TEST_F(UnmaskingTest, Test2) {
-  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> masked,
-                   ReadQRCodeArrayFromFile(kTestDataSpecExamplePath),
-                   "masked read returned error");
-
-  ASSIGN_OR_ASSERT(const QRFormat format, DecodeFormat(*masked),
-                   "decode returned error");
-  std::cout << "ecc " << format.ecc_level << " mask " << format.mask_pattern
-            << "\n";
-
-  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> unmasked,
-                   ReadQRCodeArrayFromFile(kTestDataSpecExampleUnmaskedPath),
-                   "unmasked read returned error");
-
-  VerifyUnmasking(1, std::move(masked), 3, QRCodeArrayToStrings(*unmasked));
+  for (const TestCase& test_case : kTestCases) {
+    VerifyUnmasking(1, test_case.masked, test_case.mask_pattern, expected);
+  }
 }
 
 }  // namespace
