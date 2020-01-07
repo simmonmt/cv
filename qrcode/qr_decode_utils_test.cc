@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "absl/strings/str_cat.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -10,9 +11,12 @@
 namespace {
 
 using ::testing::ElementsAreArray;
+using ::testing::VariantWith;
 
 constexpr char kTestDataSpecExamplePath[] =
     "qrcode/testdata/spec_example_1m.txt";
+constexpr char kTestDataSpecExampleUnmaskedPath[] =
+    "qrcode/testdata/spec_example_1m_unmasked.txt";
 
 class DecodeFormatTest : public ::testing::Test {
  public:
@@ -181,6 +185,38 @@ TEST_F(UnmaskingTest, Test) {
   for (const TestCase& test_case : kTestCases) {
     VerifyUnmasking(1, test_case.masked, test_case.mask_pattern, expected);
   }
+}
+
+class FindDataBlocksTest : public ::testing::Test {
+ public:
+  absl::variant<std::vector<unsigned char>, std::string> CallFindDataBlocks(
+      const QRCodeArray& array, int version) {
+    auto result = QRAttributes::New(version, QRECC_L);
+    if (absl::holds_alternative<std::string>(result)) {
+      const std::string msg = absl::get<std::string>(result);
+      std::cout << "QRAttributes init failed: " << msg;
+      return msg;
+    }
+    auto attributes =
+        std::move(absl::get<std::unique_ptr<QRAttributes>>(result));
+
+    return FindDataBlocks(*attributes, array);
+  }
+};
+
+TEST_F(FindDataBlocksTest, V1) {
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> array,
+                   ReadQRCodeArrayFromFile(kTestDataSpecExampleUnmaskedPath),
+                   "read failed");
+
+  const std::vector<unsigned char> expected = {
+      0x10, 0x20, 0x0c, 0x56, 0x61, 0x80, 0xec, 0x11, 0xec, 0x11,  //
+      0xec, 0x11, 0xec, 0x11, 0xec, 0x11, 0xa5, 0x24, 0xd4, 0xc1,  //
+      0xed, 0x36, 0xc7, 0x87, 0x2c, 0x55};
+
+  EXPECT_THAT(
+      CallFindDataBlocks(*array, 1),
+      VariantWith<std::vector<unsigned char>>(ElementsAreArray(expected)));
 }
 
 }  // namespace

@@ -16,4 +16,7 @@ absl::variant<QRFormat, std::string> DecodeFormat(const QRCodeArray& array);
 void UnmaskArray(const QRAttributes& attributes, QRCodeArray* array,
                  unsigned char mask_pattern);
 
+std::vector<unsigned char> FindDataBlocks(const QRAttributes& attributes,
+                                          const QRCodeArray& array);
+
 #endif  // _QRCODE_QR_DECODE_UTILS_H_

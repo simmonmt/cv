@@ -294,6 +294,7 @@ cc_library(
     srcs = ["qr_decode_utils.cc"],
     hdrs = ["qr_decode_utils.h"],
     deps = [
+        ":array_walker",
         ":bch",
         ":gf",
         ":qr_array",
@@ -308,10 +309,12 @@ cc_test(
     srcs = ["qr_decode_utils_test.cc"],
     data = [
         ":testdata/spec_example_1m.txt",
+        ":testdata/spec_example_1m_unmasked.txt",
     ],
     deps = [
         ":qr_decode_utils",
         ":testutils",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -492,6 +495,7 @@ cc_library(
     hdrs = ["array_walker.h"],
     deps = [
         ":point",
+        ":qr_attributes",
         "@com_google_absl//absl/types:optional",
     ],
 )
@@ -502,6 +506,7 @@ cc_test(
     srcs = ["array_walker_test.cc"],
     deps = [
         ":array_walker",
+        ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
 )
