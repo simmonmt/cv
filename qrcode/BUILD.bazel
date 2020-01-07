@@ -266,6 +266,7 @@ cc_library(
         ":qr_array",
         ":qr_attributes",
         ":qr_decode_utils",
+        ":qr_format",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
@@ -295,8 +296,6 @@ cc_library(
     hdrs = ["qr_decode_utils.h"],
     deps = [
         ":array_walker",
-        ":bch",
-        ":gf",
         ":qr_array",
         ":qr_attributes",
         "@com_google_absl//absl/types:variant",
@@ -308,7 +307,6 @@ cc_test(
     size = "small",
     srcs = ["qr_decode_utils_test.cc"],
     data = [
-        ":testdata/spec_example_1m.txt",
         ":testdata/spec_example_1m_unmasked.txt",
     ],
     deps = [
@@ -506,6 +504,33 @@ cc_test(
     srcs = ["array_walker_test.cc"],
     deps = [
         ":array_walker",
+        ":testutils",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "qr_format",
+    srcs = ["qr_format.cc"],
+    hdrs = ["qr_format.h"],
+    deps = [
+        ":bch",
+        ":gf",
+        ":qr_array",
+        ":qr_error_characteristics",
+        "@com_google_absl//absl/types:variant",
+    ],
+)
+
+cc_test(
+    name = "qr_format_test",
+    size = "small",
+    srcs = ["qr_format_test.cc"],
+    data = [
+        ":testdata/spec_example_1m.txt",
+    ],
+    deps = [
+        ":qr_format",
         ":testutils",
         "@com_google_googletest//:gtest_main",
     ],
