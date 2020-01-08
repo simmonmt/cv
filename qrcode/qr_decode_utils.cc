@@ -59,10 +59,7 @@ std::vector<unsigned char> FindDataBlocks(const QRAttributes& attributes,
     }
   }
 
-  if (num_bits > 0) {
-    cur_val <<= 8 - num_bits;
-    out.push_back(cur_val);
-  }
-
+  // We discard any bits left in cur_val because they're remainder
+  // bits and aren't part of the QRCode.
   return out;
 }

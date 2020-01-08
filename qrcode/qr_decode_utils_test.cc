@@ -11,10 +11,12 @@
 namespace {
 
 using ::testing::ElementsAreArray;
+using ::testing::SizeIs;
 using ::testing::VariantWith;
 
 constexpr char kTestDataSpecExampleUnmaskedPath[] =
     "qrcode/testdata/spec_example_1m_unmasked.txt";
+constexpr char kTestDataV2H[] = "qrcode/testdata/v2h.txt";
 
 class UnmaskingTest : public ::testing::Test {
  public:
@@ -196,6 +198,16 @@ TEST_F(FindDataBlocksTest, V1) {
   EXPECT_THAT(
       CallFindDataBlocks(*array, 1),
       VariantWith<std::vector<unsigned char>>(ElementsAreArray(expected)));
+}
+
+TEST_F(FindDataBlocksTest, V2) {
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> array,
+                   ReadQRCodeArrayFromFile(kTestDataV2H), "read failed");
+
+  // V2 has remainder bits. We want to make sure they're not returned. If they
+  // are, we'll get 45.
+  EXPECT_THAT(CallFindDataBlocks(*array, 2),
+              VariantWith<std::vector<unsigned char>>(SizeIs(44)));
 }
 
 }  // namespace
