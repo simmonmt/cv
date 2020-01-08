@@ -1,0 +1,14 @@
+Support v>6 codes.
+
+Better positioning point vetting. unparseable_v10.png has a false positive that
+happens because we're too optimistic. We can't handle cases that look like this:
+
+          ..XX.X.XX
+          .XX...X.X
+          .XX***..X
+          XX.***X.X
+          ...***.XX
+          X.X..X...
+          XXXX.XXXX
+
+The block of '*'s is what we think is the positioning block center.

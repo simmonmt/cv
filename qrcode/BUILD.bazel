@@ -535,3 +535,18 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+sh_test(
+    name = "integration_test",
+    size = "medium",
+    srcs = ["integration_test.sh"],
+    data = glob(
+        include = ["samples/*"],
+        exclude = [
+            "samples/README",
+            "samples/unparseable*",
+        ],
+    ) + [
+        "//qrcode/util:extractor",
+    ],
+)
