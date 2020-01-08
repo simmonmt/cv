@@ -210,4 +210,75 @@ TEST_F(FindCodewordsTest, V2) {
               VariantWith<std::vector<unsigned char>>(SizeIs(44)));
 }
 
+class OrderCodewordsTest : public ::testing::Test {
+ public:
+  // Returns a sequence a .. b (inclusive).
+  std::vector<unsigned char> MakeSequence(int a, int b) {
+    std::vector<unsigned char> out;
+    for (int i = a; i <= b; i++) {
+      out.push_back(i);
+    }
+    return out;
+  }
+};
+
+TEST_F(OrderCodewordsTest, V1L) {
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRAttributes> attributes,
+                   QRAttributes::New(1, QRECC_L), "attr fail");
+
+  // V1L is already ordered
+  const std::vector<unsigned char> blocks = MakeSequence(1, 44);
+  EXPECT_THAT(OrderCodewords(attributes->error_characteristics(), blocks),
+              ElementsAreArray(blocks));
+}
+
+TEST_F(OrderCodewordsTest, V5H) {
+  ASSIGN_OR_ASSERT(std::unique_ptr<QRAttributes> attributes,
+                   QRAttributes::New(5, QRECC_H), "attr fail");
+
+  // ECC codewords follow the data codewords, of which there are 46.
+  auto ecc = [](int num) -> unsigned char { return num + 46; };
+
+  const std::vector<unsigned char> unordered = {
+      1,       12,      23,      35,  //
+      2,       13,      24,      36,  //
+      3,       14,      25,      37,  //
+      4,       15,      26,      38,  //
+      5,       16,      27,      39,  //
+      6,       17,      28,      40,  //
+      7,       18,      29,      41,  //
+      8,       19,      30,      42,  //
+      9,       20,      31,      43,  //
+      10,      21,      32,      44,  //
+      11,      22,      33,      45,  //
+      34,      46,                    //
+
+      ecc(1),  ecc(23), ecc(45), ecc(67),  //
+      ecc(2),  ecc(24), ecc(46), ecc(68),  //
+      ecc(3),  ecc(25), ecc(47), ecc(69),  //
+      ecc(4),  ecc(26), ecc(48), ecc(70),  //
+      ecc(5),  ecc(27), ecc(49), ecc(71),  //
+      ecc(6),  ecc(28), ecc(50), ecc(72),  //
+      ecc(7),  ecc(29), ecc(51), ecc(73),  //
+      ecc(8),  ecc(30), ecc(52), ecc(74),  //
+      ecc(9),  ecc(31), ecc(53), ecc(75),  //
+      ecc(10), ecc(32), ecc(54), ecc(76),  //
+      ecc(11), ecc(33), ecc(55), ecc(77),  //
+      ecc(12), ecc(34), ecc(56), ecc(78),  //
+      ecc(13), ecc(35), ecc(57), ecc(79),  //
+      ecc(14), ecc(36), ecc(58), ecc(80),  //
+      ecc(15), ecc(37), ecc(59), ecc(81),  //
+      ecc(16), ecc(38), ecc(60), ecc(82),  //
+      ecc(17), ecc(39), ecc(61), ecc(83),  //
+      ecc(18), ecc(40), ecc(62), ecc(84),  //
+      ecc(19), ecc(41), ecc(63), ecc(85),  //
+      ecc(20), ecc(42), ecc(64), ecc(86),  //
+      ecc(21), ecc(43), ecc(65), ecc(87),  //
+      ecc(22), ecc(44), ecc(66), ecc(88),  //
+  };
+
+  EXPECT_THAT(OrderCodewords(attributes->error_characteristics(), unordered),
+              ElementsAreArray(MakeSequence(1, ecc(88))));
+}
+
 }  // namespace

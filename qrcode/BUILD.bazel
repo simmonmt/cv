@@ -298,6 +298,7 @@ cc_library(
         ":array_walker",
         ":qr_array",
         ":qr_attributes",
+        "@com_google_absl//absl/types:span",
         "@com_google_absl//absl/types:variant",
     ],
 )

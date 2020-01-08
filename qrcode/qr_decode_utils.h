@@ -3,6 +3,7 @@
 
 #include "qrcode/qr_array.h"
 #include "qrcode/qr_attributes.h"
+#include "qrcode/qr_error_characteristics_types.h"
 
 void UnmaskArray(const QRAttributes& attributes, QRCodeArray* array,
                  unsigned char mask_pattern);
@@ -13,5 +14,11 @@ void UnmaskArray(const QRAttributes& attributes, QRCodeArray* array,
 // decoding.
 std::vector<unsigned char> FindCodewords(const QRAttributes& attributes,
                                          const QRCodeArray& array);
+
+// Given a set of codewords values, place them in the order they had in the
+// original message sequence (i.e. before codeword placement in the matrix).
+std::vector<unsigned char> OrderCodewords(
+    const QRErrorLevelCharacteristics& error_characteristics,
+    const std::vector<unsigned char>& unordered);
 
 #endif  // _QRCODE_QR_DECODE_UTILS_H_
