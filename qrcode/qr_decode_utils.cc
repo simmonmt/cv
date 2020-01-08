@@ -36,8 +36,8 @@ void UnmaskArray(const QRAttributes& attributes, QRCodeArray* array,
   }
 }
 
-std::vector<unsigned char> FindDataBlocks(const QRAttributes& attributes,
-                                          const QRCodeArray& array) {
+std::vector<unsigned char> FindCodewords(const QRAttributes& attributes,
+                                         const QRCodeArray& array) {
   ArrayWalker walker(attributes);
   std::vector<unsigned char> out;
 

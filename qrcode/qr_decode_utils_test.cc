@@ -168,9 +168,9 @@ TEST_F(UnmaskingTest, Test) {
   }
 }
 
-class FindDataBlocksTest : public ::testing::Test {
+class FindCodewordsTest : public ::testing::Test {
  public:
-  absl::variant<std::vector<unsigned char>, std::string> CallFindDataBlocks(
+  absl::variant<std::vector<unsigned char>, std::string> CallFindCodewords(
       const QRCodeArray& array, int version) {
     auto result = QRAttributes::New(version, QRECC_L);
     if (absl::holds_alternative<std::string>(result)) {
@@ -181,11 +181,11 @@ class FindDataBlocksTest : public ::testing::Test {
     auto attributes =
         std::move(absl::get<std::unique_ptr<QRAttributes>>(result));
 
-    return FindDataBlocks(*attributes, array);
+    return FindCodewords(*attributes, array);
   }
 };
 
-TEST_F(FindDataBlocksTest, V1) {
+TEST_F(FindCodewordsTest, V1) {
   ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> array,
                    ReadQRCodeArrayFromFile(kTestDataSpecExampleUnmaskedPath),
                    "read failed");
@@ -196,17 +196,17 @@ TEST_F(FindDataBlocksTest, V1) {
       0xed, 0x36, 0xc7, 0x87, 0x2c, 0x55};
 
   EXPECT_THAT(
-      CallFindDataBlocks(*array, 1),
+      CallFindCodewords(*array, 1),
       VariantWith<std::vector<unsigned char>>(ElementsAreArray(expected)));
 }
 
-TEST_F(FindDataBlocksTest, V2) {
+TEST_F(FindCodewordsTest, V2) {
   ASSIGN_OR_ASSERT(std::unique_ptr<QRCodeArray> array,
                    ReadQRCodeArrayFromFile(kTestDataV2H), "read failed");
 
   // V2 has remainder bits. We want to make sure they're not returned. If they
   // are, we'll get 45.
-  EXPECT_THAT(CallFindDataBlocks(*array, 2),
+  EXPECT_THAT(CallFindCodewords(*array, 2),
               VariantWith<std::vector<unsigned char>>(SizeIs(44)));
 }
 
