@@ -71,23 +71,18 @@ namespace {
 // BlockState contains the current state for a given ECC block. We keep two
 // instance for each *block* -- one each for data and ECC.
 struct BlockState {
-  BlockState(const QRErrorLevelCharacteristics::BlockSet* block_set,
-             int next_idx, int left)
-      : block_set(block_set), next_idx(next_idx), left(left) {}
+  BlockState(int total) : total(total), added(0) {}
 
-  const QRErrorLevelCharacteristics::BlockSet* block_set;
+  // Total number of codewords to expect for this block, as well as how many
+  // have been added.
+  int total, added;
 
-  // Where, in the output array, the next codeword for this block should be
-  // written.
-  int next_idx;
-
-  // How many codewords remain to be read for this block.
-  int left;
+  // Where to write codewords for this block.
+  std::vector<unsigned char>* out;
 };
 
-void Untangle(absl::Span<const unsigned char> in,
-              std::vector<BlockState>* block_states,
-              absl::Span<unsigned char> out) {
+void SplitGroup(absl::Span<const unsigned char> in,
+                std::vector<BlockState>* block_states) {
   int cur_block = -1;
   for (int i = 0; i < in.size(); ++i) {
     BlockState* block_state;
@@ -95,22 +90,18 @@ void Untangle(absl::Span<const unsigned char> in,
       // Find the next block that hasn't read all of its codewords.
       cur_block = (cur_block + 1) % block_states->size();
       block_state = &(*block_states)[cur_block];
-    } while (block_state->left == 0);
+    } while (block_state->added >= block_state->total);
 
-    out[block_state->next_idx++] = in[i];
-    --block_state->left;
+    (*block_state->out)[block_state->added] = in[i];
+    ++block_state->added;
   }
 }
 
 }  // namespace
 
-std::vector<unsigned char> OrderCodewords(
+std::vector<CodewordBlock> SplitCodewordsIntoBlocks(
     const QRErrorLevelCharacteristics& error_characteristics,
     const std::vector<unsigned char>& unordered) {
-  if (error_characteristics.block_sets.size() == 1) {
-    return unordered;  // No interleaving, so return as-is.
-  }
-
   // Codewords arrive in the order they appear in the array, which means they're
   // grouped and they're interleaved. Data codewords appear first, followed by
   // the ECC codewords. Within each group, they're ordered by block (as
@@ -135,38 +126,42 @@ std::vector<unsigned char> OrderCodewords(
   // Untangling this mess means reversing that process, first for data, then for
   // ECC.
 
+  // Create one BlockState instance for each *block* (not block set) for both
+  // data and ecc. A given BlackState will have the number of codewords
+  // remaining for that block as well as a pointre to the right output array.
   std::vector<BlockState> data_states, ecc_states;
-  int data_start = 1, ecc_start = 1;
+
   for (const auto& block_set : error_characteristics.block_sets) {
     for (int i = 0; i < block_set.num_blocks; ++i) {
-      const int block_data = block_set.data_codewords;
-      const int block_ecc =
-          block_set.block_codewords - block_set.data_codewords;
-
-      data_states.emplace_back(&block_set, data_start - 1, block_data);
-      ecc_states.emplace_back(&block_set, ecc_start - 1, block_ecc);
-
-      data_start += block_data;
-      ecc_start += block_ecc;
+      data_states.emplace_back(block_set.data_codewords);
+      ecc_states.emplace_back(block_set.block_codewords -
+                              block_set.data_codewords);
     }
   }
 
-  std::vector<unsigned char> out(error_characteristics.total_data_codewords +
-                                 error_characteristics.total_ecc_codewords);
+  // Preallocate the codeword output arrays and put pointers to them in the
+  // {data|ecc}_states vectors. We couldn't do this before because we didn't
+  // know how big codeword_blocks needed to be (and thus couldn't guarantee
+  // pointer stability).
+  std::vector<CodewordBlock> codeword_blocks(data_states.size());
+  for (int i = 0; i < data_states.size(); i++) {
+    CodewordBlock* codeword_block = &codeword_blocks[i];
 
-  // Fix the order of the data codewords.
-  Untangle(absl::MakeConstSpan(unordered).subspan(
-               0, error_characteristics.total_data_codewords),
-           &data_states,
-           absl::MakeSpan(out).subspan(
-               0, error_characteristics.total_data_codewords));
+    codeword_block->data.resize(data_states[i].total);
+    data_states[i].out = &codeword_blocks[i].data;
 
-  // Fix the order of the ECC codewords.
-  Untangle(
-      absl::MakeConstSpan(unordered).subspan(
-          error_characteristics.total_data_codewords),
-      &ecc_states,
-      absl::MakeSpan(out).subspan(error_characteristics.total_data_codewords));
+    codeword_block->ecc.resize(ecc_states[i].total);
+    ecc_states[i].out = &codeword_blocks[i].ecc;
+  }
 
-  return out;
-};
+  // Split the data codewords into their blocks.
+  SplitGroup(absl::MakeConstSpan(unordered).subspan(
+                 0, error_characteristics.total_data_codewords),
+             &data_states);
+  // Split the ECC codewords into their blocks.
+  SplitGroup(absl::MakeConstSpan(unordered).subspan(
+                 error_characteristics.total_data_codewords),
+             &ecc_states);
+
+  return codeword_blocks;
+}

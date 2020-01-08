@@ -10,7 +10,9 @@
 
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
+using ::testing::Field;
 using ::testing::SizeIs;
 using ::testing::VariantWith;
 
@@ -210,7 +212,7 @@ TEST_F(FindCodewordsTest, V2) {
               VariantWith<std::vector<unsigned char>>(SizeIs(44)));
 }
 
-class OrderCodewordsTest : public ::testing::Test {
+class SplitCodewordsTest : public ::testing::Test {
  public:
   // Returns a sequence a .. b (inclusive).
   std::vector<unsigned char> MakeSequence(int a, int b) {
@@ -222,17 +224,7 @@ class OrderCodewordsTest : public ::testing::Test {
   }
 };
 
-TEST_F(OrderCodewordsTest, V1L) {
-  ASSIGN_OR_ASSERT(std::unique_ptr<QRAttributes> attributes,
-                   QRAttributes::New(1, QRECC_L), "attr fail");
-
-  // V1L is already ordered
-  const std::vector<unsigned char> blocks = MakeSequence(1, 44);
-  EXPECT_THAT(OrderCodewords(attributes->error_characteristics(), blocks),
-              ElementsAreArray(blocks));
-}
-
-TEST_F(OrderCodewordsTest, V5H) {
+TEST_F(SplitCodewordsTest, V5H) {
   ASSIGN_OR_ASSERT(std::unique_ptr<QRAttributes> attributes,
                    QRAttributes::New(5, QRECC_H), "attr fail");
 
@@ -277,8 +269,25 @@ TEST_F(OrderCodewordsTest, V5H) {
       ecc(22), ecc(44), ecc(66), ecc(88),  //
   };
 
-  EXPECT_THAT(OrderCodewords(attributes->error_characteristics(), unordered),
-              ElementsAreArray(MakeSequence(1, ecc(88))));
+  EXPECT_THAT(
+      SplitCodewordsIntoBlocks(attributes->error_characteristics(), unordered),
+      ElementsAre(
+          AllOf(Field(&CodewordBlock::data,
+                      ElementsAreArray(MakeSequence(1, 11))),
+                Field(&CodewordBlock::ecc,
+                      ElementsAreArray(MakeSequence(ecc(1), ecc(22))))),
+          AllOf(Field(&CodewordBlock::data,
+                      ElementsAreArray(MakeSequence(12, 22))),
+                Field(&CodewordBlock::ecc,
+                      ElementsAreArray(MakeSequence(ecc(23), ecc(44))))),
+          AllOf(Field(&CodewordBlock::data,
+                      ElementsAreArray(MakeSequence(23, 34))),
+                Field(&CodewordBlock::ecc,
+                      ElementsAreArray(MakeSequence(ecc(45), ecc(66))))),
+          AllOf(Field(&CodewordBlock::data,
+                      ElementsAreArray(MakeSequence(35, 46))),
+                Field(&CodewordBlock::ecc,
+                      ElementsAreArray(MakeSequence(ecc(67), ecc(88)))))));
 }
 
 }  // namespace

@@ -7,10 +7,12 @@
 
 #include "qrcode/qr_array.h"
 #include "qrcode/qr_attributes.h"
+#include "qrcode/qr_types.h"
 
 struct QRCode {
   std::unique_ptr<QRAttributes> attributes;
   std::unique_ptr<QRCodeArray> unmasked_array;
+  std::vector<CodewordBlock> codewords;
 };
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(

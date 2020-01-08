@@ -22,4 +22,10 @@ struct PositioningPoints {
 
 std::ostream& operator<<(std::ostream& stream, const PositioningPoints& pp);
 
+// A single block of codewords from a QR code.
+struct CodewordBlock {
+  std::vector<unsigned char> data;
+  std::vector<unsigned char> ecc;
+};
+
 #endif  // _QRCODE_QR_TYPES_H_
