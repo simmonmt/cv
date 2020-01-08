@@ -24,13 +24,14 @@ absl::variant<std::unique_ptr<LocatedCode>, std::string> LocateCode(
   }
 
   if (candidates.size() < 3) {
-    return "failed to find 3 positioning blocks";
+    return absl::StrFormat("want 3 positioning blocks, found %d",
+                           candidates.size());
   }
 
-  // The threshold for clustering candidate partioning block centers. We can get
-  // away with 10 if the code is already properly oriented, but we need a bigger
-  // threshold to cover angled cases where our ratio detection might have a
-  // harder time.
+  // The threshold for clustering candidate positioning block centers. We can
+  // get away with 10 if the code is already properly oriented, but we need a
+  // bigger threshold to cover angled cases where our ratio detection might have
+  // a harder time.
   constexpr int kPositioningBlockClusteringThreshold = 50;
 
   absl::optional<std::vector<Point>> maybe_clusters =

@@ -23,7 +23,7 @@ TEST(NormalizeCodeTest, Test) {
   // If this fails, the output of LocateCode has changed, which means
   // assertion failures from NormalizeCode results are likely the fault
   // of LocateCode changes -- not problems with NormalizeCode.
-  ASSERT_THAT(located_code->center, Eq(Point(1105, 1109)));
+  ASSERT_THAT(located_code->center, Eq(Point(1107, 1110)));
 
   auto extract_result = NormalizeCode(image, *located_code);
   ASSERT_THAT(extract_result, VariantWith<std::unique_ptr<QRImage>>(_));
@@ -31,15 +31,15 @@ TEST(NormalizeCodeTest, Test) {
       std::move(absl::get<std::unique_ptr<QRImage>>(extract_result));
 
   PositioningPoints expected_points = {
-      {669, 683},
-      {1526, 677},
-      {672, 1542},
+      {669, 684},
+      {1526, 678},
+      {671, 1543},
   };
   EXPECT_THAT(qr_image->positioning_points, Eq(expected_points));
 
   // The center moves, not because of the rotation, but because NormalizeCode
   // recenters the positioning points.
-  EXPECT_THAT(qr_image->center, Eq(Point(1099, 1110)));
+  EXPECT_THAT(qr_image->center, Eq(Point(1098, 1111)));
 }
 
 }  // namespace

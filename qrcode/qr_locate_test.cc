@@ -35,13 +35,13 @@ class LocateCodeTest : public ::testing::Test {
 
 TEST_F(LocateCodeTest, Straight) {
   PositioningPoints expected_points = {
-      {669, 684},
-      {1525, 677},
+      {668, 684},
+      {1526, 677},
       {672, 1542},
   };
 
   Point expected_center(1099, 1110);
-  double expected_angle = 0.2;
+  double expected_angle = 0.267;
 
   TestImage(kStraightImageRelPath, expected_points, expected_center,
             expected_angle);
@@ -49,13 +49,13 @@ TEST_F(LocateCodeTest, Straight) {
 
 TEST_F(LocateCodeTest, Tilt) {
   PositioningPoints expected_points = {
-      {1016, 514},
-      {1705, 1014},
+      {1015, 513},
+      {1710, 1018},
       {506, 1203},
   };
 
-  Point expected_center(1105, 1109);
-  double expected_angle = -36.5;
+  Point expected_center(1107, 1110);
+  double expected_angle = -36.4;
 
   TestImage(kTiltImageRelPath, expected_points, expected_center,
             expected_angle);

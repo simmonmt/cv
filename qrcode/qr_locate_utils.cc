@@ -19,22 +19,19 @@ bool IsPositioningBlock(const std::vector<int>& lens) {
   const int rw = lens[3];
   const int rb = lens[4];
 
-  if (lb < 10) {
-    return false;
-  }
+  // NOTE: These thresholds (0.5-1.5 for the small, 2.5-3.5 for the large) are
+  // from the reference decode algorithm in the spec.
 
-  // NOTE: These thresholds were determined empirically
-
-  double small = (lb + lw + rw + rb) / 4.0;
-  double small_high = small * 1.15, small_low = small * 0.85;
+  double small_avg = (lb + lw + rw + rb) / 4.0;
   for (int n : {lb, lw, rw, rb}) {
-    if (n < small_low || n > small_high) {
+    double sz = n / small_avg;
+    if (sz < 0.5 || sz > 1.5) {
       return false;
     }
   }
 
-  double big_high = small * 3 * 1.05, big_low = small * 3 * 0.95;
-  if (c < big_low || c > big_high) {
+  double big_normalized = c / small_avg;
+  if (big_normalized < 2.5 || big_normalized > 3.5) {
     return false;
   }
 
