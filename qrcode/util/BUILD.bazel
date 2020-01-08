@@ -11,6 +11,7 @@ cc_binary(
     name = "runs",
     srcs = ["runs.cc"],
     deps = [
+        "//qrcode:cv_utils",
         "//qrcode:pixel_iterator",
         "//qrcode:qr_types",
         "//qrcode:runner",

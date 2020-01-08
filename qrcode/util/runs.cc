@@ -10,6 +10,7 @@
 #include "absl/types/optional.h"
 #include "opencv2/opencv.hpp"
 
+#include "qrcode/cv_utils.h"
 #include "qrcode/pixel_iterator.h"
 #include "qrcode/qr_types.h"
 #include "qrcode/runner.h"
@@ -25,8 +26,8 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  cv::Mat image = cv::imread(absl::GetFlag(FLAGS_input), cv::IMREAD_GRAYSCALE);
-  if (image.data == nullptr) {
+  cv::Mat image;
+  if (!ReadBwImage(absl::GetFlag(FLAGS_input), image)) {
     std::cerr << "failed to read image\n";
     return -1;
   }
