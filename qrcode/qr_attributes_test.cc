@@ -112,7 +112,7 @@ TEST(QRAttributesTest, OtherMethods) {
   const QRErrorLevelCharacteristics error_characteristics =
       attributes->error_characteristics();
   ASSERT_EQ(2, error_characteristics.block_sets.size());
-  EXPECT_EQ(33, error_characteristics.block_sets[0].total_codewords);
+  EXPECT_EQ(33, error_characteristics.block_sets[0].block_codewords);
 }
 
 }  // namespace

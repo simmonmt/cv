@@ -120,9 +120,9 @@ type BlockDesc struct {
 }
 
 type ECCDesc struct {
-	Level        ECCLevel
-	NumCodewords int // Number of ECC codewords
-	Blocks       []BlockDesc
+	Level           ECCLevel
+	NumECCCodewords int // Number of ECC codewords
+	Blocks          []BlockDesc
 }
 
 type VersionDesc struct {
@@ -152,8 +152,8 @@ func parseECCDesc(line []string) (*ECCDesc, error) {
 	}
 
 	desc := &ECCDesc{
-		Level:        eccLevel,
-		NumCodewords: numCodewords,
+		Level:           eccLevel,
+		NumECCCodewords: numCodewords,
 	}
 
 	return desc, nil
@@ -284,9 +284,10 @@ func validateDesc(desc *VersionDesc) error {
 				blockDesc.Num
 		}
 
-		if derived != eccDesc.NumCodewords {
+		if derived != eccDesc.NumECCCodewords {
 			return fmt.Errorf("version %d: %v: derived ecc codewords %d != top %d",
-				desc.Version, eccDesc.Level, derived, eccDesc.NumCodewords)
+				desc.Version, eccDesc.Level, derived,
+				eccDesc.NumECCCodewords)
 		}
 	}
 
@@ -350,6 +351,12 @@ func writeHeader(descs []*VersionDesc, w io.Writer) error {
 
 		for _, eccDesc := range desc.ECC {
 			str += "{" // begin the LevelDesc
+
+			str += strconv.Itoa( // total_data_codewords
+				desc.NumCodewords-eccDesc.NumECCCodewords) + ","
+			str += strconv.Itoa( // total_ecc_codewords
+				eccDesc.NumECCCodewords) + ","
+
 			str += "{" // begin the block_sets vector
 
 			for _, blockDesc := range eccDesc.Blocks {

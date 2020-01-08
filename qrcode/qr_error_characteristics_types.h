@@ -13,9 +13,12 @@ enum QRErrorCorrection {
 
 // Describes the ECC characteristics for a given version and ECC level.
 struct QRErrorLevelCharacteristics {
+  int total_data_codewords;
+  int total_ecc_codewords;
+
   struct BlockSet {
     int num_blocks;
-    int total_codewords;
+    int block_codewords;
     int data_codewords;
   };
 
