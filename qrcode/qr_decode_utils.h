@@ -20,6 +20,12 @@ std::vector<unsigned char> OrderCodewords(
     const QRErrorLevelCharacteristics& error_characteristics,
     const std::vector<unsigned char>& unordered);
 
+// A single block of codewords from a QR code.
+struct CodewordBlock {
+  std::vector<unsigned char> data;
+  std::vector<unsigned char> ecc;
+};
+
 // Given a set of codewords from the array (i.e. as returned by FindCodewords),
 // but them back into their blocks.
 std::vector<CodewordBlock> SplitCodewordsIntoBlocks(

@@ -55,8 +55,14 @@ absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
   // Unmask the array (ref algorithm step 11)
   UnmaskArray(*attributes, array.get(), format.mask_pattern);
 
-  std::vector<CodewordBlock> codewords = SplitCodewordsIntoBlocks(
+  std::vector<CodewordBlock> codeword_blocks = SplitCodewordsIntoBlocks(
       attributes->error_characteristics(), FindCodewords(*attributes, *array));
+
+  std::vector<unsigned char> codewords;
+  for (int i = 0; i < codeword_blocks.size(); ++i) {
+    std::copy(codeword_blocks[i].data.begin(), codeword_blocks[i].data.end(),
+              std::back_inserter(codewords));
+  }
 
   auto qrcode = absl::make_unique<QRCode>();
   qrcode->attributes = std::move(attributes);

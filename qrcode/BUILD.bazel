@@ -280,6 +280,7 @@ cc_test(
     name = "qr_decode_test",
     srcs = ["qr_decode_test.cc"],
     data = [
+        ":testdata/spec_example_1m.txt",
         ":testdata/straight.txt",
     ],
     deps = [

@@ -12,7 +12,7 @@
 struct QRCode {
   std::unique_ptr<QRAttributes> attributes;
   std::unique_ptr<QRCodeArray> unmasked_array;
-  std::vector<CodewordBlock> codewords;
+  std::vector<unsigned char> codewords;
 };
 
 absl::variant<std::unique_ptr<QRCode>, std::string> Decode(
