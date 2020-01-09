@@ -12,8 +12,8 @@ git_repository(
     remote = "https://github.com/abseil/abseil-cpp.git",
     # To update: comment out commit and shallow_since, uncomment branch,
     # build, update commit and shallow_since per the debug warnings.
-    commit = "ad904b6cd3906ddf79878003d92b7bc08d7786ae", 
-    shallow_since = "1576788056 -0500",
+    commit = "63ee2f8877915a3565c29707dba8fe4d7822596a", 
+    shallow_since = "1578426644 -0500",
     # branch = "master",
 )
 
