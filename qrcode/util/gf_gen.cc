@@ -1,8 +1,9 @@
 // A utility that generates the alpha power values in GF(2^4) and
-// GF(2^5) as well as the implementation of multiplication for that
+// GF(2^8) as well as the implementation of multiplication for that
 // field.
 
 #include <iostream>
+#include <map>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
@@ -32,11 +33,11 @@ std::string PowerString(const std::string& base, int pow) {
   }
 }
 
-std::string PolyToString(unsigned char p) {
+std::string PolyToString(unsigned p) {
   std::string out;
 
   bool first = true;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 16; i++) {
     if (p & 1) {
       if (first) {
         first = false;
@@ -51,7 +52,7 @@ std::string PolyToString(unsigned char p) {
   return out;
 }
 
-std::string ToBin(unsigned char v, int lim) {
+std::string ToBin(unsigned v, int lim) {
   std::string out;
   for (int i = 0; i < lim; ++i) {
     out = ((v & 1) ? "1" : "0") + out;
@@ -60,11 +61,11 @@ std::string ToBin(unsigned char v, int lim) {
   return out;
 }
 
-absl::optional<std::vector<unsigned char>> GenGFBits(int m, unsigned char p) {
-  unsigned char val = 1;
-  std::vector<unsigned char> bits;
+absl::optional<std::vector<unsigned>> GenGFBits(int m, unsigned p) {
+  unsigned val = 1;
+  std::vector<unsigned> bits;
   int i;
-  for (i = 0; i < 100 && (i == 0 || val != 1); ++i) {
+  for (i = 0; i < 1000 && (i == 0 || val != 1); ++i) {
     bits.push_back(val);
     val <<= 1;
     if (val & (1 << m)) {
@@ -72,7 +73,7 @@ absl::optional<std::vector<unsigned char>> GenGFBits(int m, unsigned char p) {
     }
   }
 
-  if (i == 100) {
+  if (i == 1000) {
     return absl::nullopt;  // the loop didn't terminate
   }
 
@@ -80,7 +81,7 @@ absl::optional<std::vector<unsigned char>> GenGFBits(int m, unsigned char p) {
 }
 
 void GenMultTerms(int m, const char* left, const char* right,
-                  const std::vector<unsigned char>& bits) {
+                  const std::vector<unsigned>& bits) {
   std::cout << absl::StrFormat("=== GF(2^%d) multiplication (%*.*s * %*.*s)\n",
                                m, m, m, left, m, m, right);
 
@@ -99,7 +100,7 @@ void GenMultTerms(int m, const char* left, const char* right,
 
   std::vector<Term> simp;
   for (const Term& t : terms) {
-    unsigned char pat = bits[t.y];
+    unsigned pat = bits[t.y];
     for (int i = 0; i < m; ++i) {
       if (pat & 1) {
         simp.push_back(Term(t.l, t.r, i));
@@ -149,7 +150,7 @@ void GenMultTerms(int m, const char* left, const char* right,
   }
 }
 
-void PrintGF(int m, unsigned char p) {
+void PrintGF(int m, unsigned p) {
   std::cout << "=== GF(2^" << m << ") poly " << PolyToString(p) << "\n";
   auto maybe_bits = GenGFBits(m, p);
   if (!maybe_bits.has_value()) {
@@ -157,13 +158,30 @@ void PrintGF(int m, unsigned char p) {
     return;
   }
 
-  const std::vector<unsigned char> bits = *maybe_bits;
+  const std::vector<unsigned> bits = *maybe_bits;
   for (int i = 0; i < bits.size(); ++i) {
     std::cout << i << ": " << ToBin(bits[i], 5) << "\n";
   }
 
   for (int i = 0; i < bits.size(); ++i) {
     std::cout << int(bits[i]) << ", ";
+  }
+  std::cout << "\n";
+
+  std::map<int, int> elements_to_powers;
+  for (int i = 0; i < bits.size(); ++i) {
+    if (elements_to_powers[bits[i]] != 0) {
+      std::cerr << "double write at " << i << "\n";
+    }
+    elements_to_powers[bits[i]] = i;
+  }
+  std::cout << "kElementsToPowers: ";
+  for (int i = 0; i < std::pow(2, m); ++i) {
+    if (i == 0) {
+      std::cout << "255, ";
+    } else {
+      std::cout << elements_to_powers[i] << ", ";
+    }
   }
   std::cout << "\n";
 
@@ -178,6 +196,6 @@ void PrintGF(int m, unsigned char p) {
 
 int main(int argc, char** argv) {
   PrintGF(4, 0x13 /* x^4+x+1 */);
-  PrintGF(5, 0x25 /* x^5+x^2+1 */);
+  PrintGF(8, 0x11d /* x^8+x^4+x^3+x^2+1 */);
   return 0;
 }
