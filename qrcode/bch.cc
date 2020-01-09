@@ -8,7 +8,7 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
   unsigned char out_bits = 0;
   for (int i = 0; i < poly.size(); ++i) {
     if (poly[i]) {
-      out_bits = gf.Add({out_bits, gf.Power(i * alpha_power)});
+      out_bits = gf.Add({out_bits, gf.AlphaPow(i * alpha_power)});
     }
   }
   return out_bits;

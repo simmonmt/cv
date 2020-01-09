@@ -42,7 +42,7 @@ class GF {
   virtual unsigned char Pow(unsigned char x, int y) const = 0;
 
   // Returns a specified power of alpha.
-  virtual unsigned char Power(int y) const = 0;
+  virtual unsigned char AlphaPow(int y) const = 0;
 };
 
 // Functions used to perform operations in GF(16), aka GF(2^4).
@@ -57,7 +57,7 @@ class GF16 : public GF {
   unsigned char Add(std::initializer_list<unsigned char> elems) const override;
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
   unsigned char Pow(unsigned char x, int y) const override;
-  unsigned char Power(int y) const override;
+  unsigned char AlphaPow(int y) const override;
 
  private:
   static constexpr unsigned char kPowersOfAlpha[15] = {
@@ -92,7 +92,7 @@ class GF256 : public GF {
   unsigned char Add(std::initializer_list<unsigned char> elems) const override;
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
   unsigned char Pow(unsigned char x, int y) const override;
-  unsigned char Power(int y) const override;
+  unsigned char AlphaPow(int y) const override;
 
  private:
   static constexpr unsigned char kPowersOfAlpha[255] = {

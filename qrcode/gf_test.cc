@@ -14,7 +14,7 @@ void TestMult(const GF& gf) {
     for (int j = 0; j < powers_of_alpha.size(); ++j) {
       const unsigned char m1 = powers_of_alpha[i];
       const unsigned char m2 = powers_of_alpha[j];
-      const unsigned char res = gf.Power(i + j);
+      const unsigned char res = gf.AlphaPow(i + j);
 
       EXPECT_EQ(res, gf.Mult(m1, m2))
           << "i=" << i << ",j=" << j << " " << int(m1) << "*" << int(m2) << "="
@@ -28,7 +28,7 @@ void TestMult(const GF& gf) {
 
   for (int i = 0; i < 100; ++i) {
     // Verify that alpha^n * alpha == alpha^n+1
-    EXPECT_EQ(gf.Power(i + 1), gf.Mult(gf.Power(i), gf.Power(1)));
+    EXPECT_EQ(gf.AlphaPow(i + 1), gf.Mult(gf.AlphaPow(i), gf.AlphaPow(1)));
   }
 }
 
