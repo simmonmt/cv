@@ -21,7 +21,7 @@ void TestMult(const GF& gf) {
           << int(res);
 
       if (i == j) {
-        EXPECT_EQ(res, gf.Exp(m1, 2)) << "square " << i << " " << int(m1);
+        EXPECT_EQ(res, gf.Pow(m1, 2)) << "square " << i << " " << int(m1);
       }
     }
   }
@@ -44,14 +44,14 @@ TEST(GF16Test, Add) {
 
 TEST(GF16Test, Mult) { TestMult(GF16()); }
 
-TEST(GF16Test, Exp) {
-  GF16 gf16;
+TEST(GF16Test, Pow) {
+  GF16 gf;
 
-  EXPECT_EQ(b0000, gf16.Exp(b0000, 2));
-  EXPECT_EQ(gf16.PowersOfAlpha()[4], gf16.Exp(gf16.PowersOfAlpha()[2], 2));
+  EXPECT_EQ(b0000, gf.Pow(b0000, 2));
+  EXPECT_EQ(gf.PowersOfAlpha()[4], gf.Pow(gf.PowersOfAlpha()[2], 2));
 
   // alpha^10^2 = alpha^20 = alpha^5
-  EXPECT_EQ(gf16.PowersOfAlpha()[5], gf16.Exp(gf16.PowersOfAlpha()[10], 2));
+  EXPECT_EQ(gf.PowersOfAlpha()[5], gf.Pow(gf.PowersOfAlpha()[10], 2));
 }
 
 TEST(GF256Test, Add) {
@@ -66,20 +66,20 @@ TEST(GF256Test, Add) {
 
 TEST(GF256Test, Mult) { TestMult(GF256()); }
 
-TEST(GF256Test, Exp) {
+TEST(GF256Test, Pow) {
   GF256 gf;
 
-  EXPECT_EQ(0b00000000, gf.Exp(0b00000000, 2));
-  EXPECT_EQ(gf.PowersOfAlpha()[4], gf.Exp(gf.PowersOfAlpha()[2], 2));
+  EXPECT_EQ(0b00000000, gf.Pow(0b00000000, 2));
+  EXPECT_EQ(gf.PowersOfAlpha()[4], gf.Pow(gf.PowersOfAlpha()[2], 2));
 
   for (int i = 0; i < 256; ++i) {
-    if (gf.PowersOfAlpha()[i] == gf.Exp(gf.PowersOfAlpha()[200], 2)) {
+    if (gf.PowersOfAlpha()[i] == gf.Pow(gf.PowersOfAlpha()[200], 2)) {
       std::cout << "found " << i << "\n";
     }
   }
 
   // alpha^200^2 = alpha^400 = alpha^145
-  EXPECT_EQ(gf.PowersOfAlpha()[145], gf.Exp(gf.PowersOfAlpha()[200], 2));
+  EXPECT_EQ(gf.PowersOfAlpha()[145], gf.Pow(gf.PowersOfAlpha()[200], 2));
 }
 
 }  // namespace
