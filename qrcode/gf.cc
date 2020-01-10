@@ -64,8 +64,10 @@ unsigned char GF16::Mult(unsigned char m1, unsigned char m2) const {
 }
 
 unsigned char GF16::Pow(unsigned char x, int y) const {
-  if (x == 0) {
-    return x;
+  if (y == 0) {
+    return 1;
+  } else if (x == 0) {
+    return 0;
   }
   return kPowersOfAlpha[(kElementsToPowers[x] * y) % 15];
 }
@@ -151,8 +153,10 @@ unsigned char GF256::Mult(unsigned char m1, unsigned char m2) const {
 }
 
 unsigned char GF256::Pow(unsigned char x, int y) const {
-  if (x == 0) {
-    return x;
+  if (y == 0) {
+    return 1;
+  } else if (x == 0) {
+    return 0;
   }
   return kPowersOfAlpha[(kElementsToPowers[x] * y) % 255];
 }

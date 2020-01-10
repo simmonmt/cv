@@ -47,6 +47,7 @@ TEST(GF16Test, Mult) { TestMult(GF16()); }
 TEST(GF16Test, Pow) {
   GF16 gf;
 
+  EXPECT_EQ(0b0001, gf.Pow(0b0101, 0));
   EXPECT_EQ(b0000, gf.Pow(b0000, 2));
   EXPECT_EQ(gf.PowersOfAlpha()[4], gf.Pow(gf.PowersOfAlpha()[2], 2));
 
@@ -69,6 +70,7 @@ TEST(GF256Test, Mult) { TestMult(GF256()); }
 TEST(GF256Test, Pow) {
   GF256 gf;
 
+  EXPECT_EQ(0b00000001, gf.Pow(0b01010101, 0));
   EXPECT_EQ(0b00000000, gf.Pow(0b00000000, 2));
   EXPECT_EQ(gf.PowersOfAlpha()[4], gf.Pow(gf.PowersOfAlpha()[2], 2));
 
