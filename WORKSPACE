@@ -4,7 +4,7 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 new_local_repository(
     name = "opencv",
     build_file = "BUILD.opencv",
-    path = "/usr/local/Cellar/opencv/4.1.2",
+    path = "/usr/local/Cellar/opencv/4.2.0_1",
 )
 
 git_repository(
