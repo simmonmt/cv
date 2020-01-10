@@ -8,6 +8,9 @@ class GF {
  public:
   virtual ~GF() = default;
 
+  // Return m, as in GF(2^m), for this field.
+  virtual int m() const = 0;
+
   // The returned vector contains powers [0..2^m-2] of alpha, which
   // are members of the field. These elements have m terms, and take
   // the form:
@@ -35,6 +38,11 @@ class GF {
   virtual unsigned char Add(
       std::initializer_list<unsigned char> elems) const = 0;
 
+  // Subtraction is the same as addition for fields with characteristic 2.
+  unsigned char Sub(std::initializer_list<unsigned char> elems) const {
+    return Add(elems);
+  }
+
   // Multiplies elements of the field.
   virtual unsigned char Mult(unsigned char m1, unsigned char m2) const = 0;
 
@@ -43,6 +51,9 @@ class GF {
 
   // Returns a specified power of alpha.
   virtual unsigned char AlphaPow(int y) const = 0;
+
+  // Inverts AlphaPow -- given non-zero x returns y such that alpha^y=x.
+  virtual int ToAlphaPow(unsigned char x) const = 0;
 };
 
 // Functions used to perform operations in GF(16), aka GF(2^4).
@@ -51,6 +62,8 @@ class GF16 : public GF {
  public:
   ~GF16() override = default;
 
+  int m() const override { return 4; }
+
   const std::vector<unsigned char>& PowersOfAlpha() const override;
   const std::vector<unsigned char>& Elements() const override;
 
@@ -58,6 +71,7 @@ class GF16 : public GF {
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
   unsigned char Pow(unsigned char x, int y) const override;
   unsigned char AlphaPow(int y) const override;
+  int ToAlphaPow(unsigned char x) const override;
 
  private:
   static constexpr unsigned char kPowersOfAlpha[15] = {
@@ -86,6 +100,8 @@ class GF256 : public GF {
  public:
   ~GF256() override = default;
 
+  int m() const override { return 8; }
+
   const std::vector<unsigned char>& PowersOfAlpha() const override;
   const std::vector<unsigned char>& Elements() const override;
 
@@ -93,6 +109,7 @@ class GF256 : public GF {
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
   unsigned char Pow(unsigned char x, int y) const override;
   unsigned char AlphaPow(int y) const override;
+  int ToAlphaPow(unsigned char x) const override;
 
  private:
   static constexpr unsigned char kPowersOfAlpha[255] = {

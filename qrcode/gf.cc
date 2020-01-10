@@ -74,6 +74,8 @@ unsigned char GF16::Pow(unsigned char x, int y) const {
 
 unsigned char GF16::AlphaPow(int y) const { return kPowersOfAlpha[y % 15]; }
 
+int GF16::ToAlphaPow(unsigned char x) const { return kElementsToPowers[x]; }
+
 constexpr unsigned char GF256::kPowersOfAlpha[];
 constexpr unsigned char GF256::kElements[];
 constexpr unsigned char GF256::kElementsToPowers[];
@@ -162,3 +164,5 @@ unsigned char GF256::Pow(unsigned char x, int y) const {
 }
 
 unsigned char GF256::AlphaPow(int y) const { return kPowersOfAlpha[y % 255]; }
+
+int GF256::ToAlphaPow(unsigned char x) const { return kElementsToPowers[x]; }
