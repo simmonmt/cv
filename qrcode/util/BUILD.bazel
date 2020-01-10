@@ -58,3 +58,13 @@ cc_binary(
         "@opencv",
     ],
 )
+
+cc_binary(
+    name = "gf_play",
+    srcs = ["gf_play.cc"],
+    deps = [
+        "//qrcode:gf",
+        "//qrcode:stl_logging",
+        "@com_google_absl//absl/types:variant",
+    ],
+)
