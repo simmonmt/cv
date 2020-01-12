@@ -229,13 +229,13 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
 
 absl::variant<std::vector<bool>, std::string> DecodeBCH(
     const GF& gf, const std::vector<bool>& bits, int c, int d) {
-  int s_low = c;
+  int s_lo = c;
   int s_hi = c + d - 2;
 
   std::vector<unsigned char> syndromes(s_hi + 1);
 
   bool all_zero = true;
-  for (int i = s_low; i <= s_hi; i++) {
+  for (int i = s_lo; i <= s_hi; i++) {
     unsigned char r = R(gf, bits, i);
     syndromes[i] = r;
     if (r != 0) {
@@ -247,7 +247,8 @@ absl::variant<std::vector<bool>, std::string> DecodeBCH(
     return bits;
   }
 
-  int t = (d - c + 1) / 2;
+  int t = (d - 1) / 2;
+
   std::vector<unsigned char> lambda = PGZ(gf, c, t, syndromes);
   if (lambda.empty()) {
     return "no lambda found";
@@ -271,8 +272,11 @@ absl::variant<std::vector<bool>, std::string> DecodeBCH(
 int main(int argc, char** argv) {
   GF16 gf;
 
-  auto result =
-      DecodeBCH(gf, {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1}, 1, 7);
+  std::vector<bool> in = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
+  in[13] = !in[13];
+  in[5] = !in[5];
+
+  auto result = DecodeBCH(gf, in, 1, 7);
   if (absl::holds_alternative<std::string>(result)) {
     std::cerr << absl::get<std::string>(result) << "\n";
     return 1;
