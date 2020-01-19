@@ -80,6 +80,25 @@ absl::optional<std::vector<unsigned>> GenGFBits(int m, unsigned p) {
   return bits;
 }
 
+void GenElementsToPowers(const std::vector<unsigned>& bits, int m) {
+  std::map<int, int> elements_to_powers;
+  for (int i = 0; i < bits.size(); ++i) {
+    if (elements_to_powers[bits[i]] != 0) {
+      std::cerr << "double write at " << i << "\n";
+    }
+    elements_to_powers[bits[i]] = i;
+  }
+  std::cout << "kElementsToPowers: ";
+  for (int i = 0; i < std::pow(2, m); ++i) {
+    if (i == 0) {
+      std::cout << "255, ";
+    } else {
+      std::cout << elements_to_powers[i] << ", ";
+    }
+  }
+  std::cout << "\n";
+}
+
 void GenMultTerms(int m, const char* left, const char* right,
                   const std::vector<unsigned>& bits) {
   std::cout << absl::StrFormat("=== GF(2^%d) multiplication (%*.*s * %*.*s)\n",
@@ -92,11 +111,11 @@ void GenMultTerms(int m, const char* left, const char* right,
     }
   }
 
-  std::cout << "terms: ";
-  for (const Term& t : terms) {
-    std::cout << t << " ";
-  }
-  std::cout << "\n";
+  // std::cout << "terms: ";
+  // for (const Term& t : terms) {
+  //   std::cout << t << " ";
+  // }
+  // std::cout << "\n";
 
   std::vector<Term> simp;
   for (const Term& t : terms) {
@@ -109,11 +128,11 @@ void GenMultTerms(int m, const char* left, const char* right,
     }
   }
 
-  std::cout << "simplified: ";
-  for (const Term& t : simp) {
-    std::cout << t << " ";
-  }
-  std::cout << "\n";
+  // std::cout << "simplified: ";
+  // for (const Term& t : simp) {
+  //   std::cout << t << " ";
+  // }
+  // std::cout << "\n";
 
   std::cout << "grouped:\n";
   for (int pow = 0; pow < m; ++pow) {
@@ -168,22 +187,7 @@ void PrintGF(int m, unsigned p) {
   }
   std::cout << "\n";
 
-  std::map<int, int> elements_to_powers;
-  for (int i = 0; i < bits.size(); ++i) {
-    if (elements_to_powers[bits[i]] != 0) {
-      std::cerr << "double write at " << i << "\n";
-    }
-    elements_to_powers[bits[i]] = i;
-  }
-  std::cout << "kElementsToPowers: ";
-  for (int i = 0; i < std::pow(2, m); ++i) {
-    if (i == 0) {
-      std::cout << "255, ";
-    } else {
-      std::cout << elements_to_powers[i] << ", ";
-    }
-  }
-  std::cout << "\n";
+  GenElementsToPowers(bits, m);
 
   static constexpr char kVars[] = "abcdefghijklmnopqrstuvwxyz";
   const char* left = kVars;
