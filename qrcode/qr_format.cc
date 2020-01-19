@@ -65,10 +65,26 @@ absl::variant<QRFormat, std::string> DecodeFormat(const QRCodeArray& array) {
   };
 
   GF16 gf16;
+
+  // Format uses BCH(15,5), with what seem to be c=1 and d=7. The spec
+  // doesn't give us values for c or d.
+  //
+  // https://en.m.wikipedia.org/wiki/BCH_code#Calculate_the_syndromes
+  // says there are syndromes c to c+d-2. The spec's worked example
+  // (only found in the 2000 version of the spec, section C.2) says to
+  // calculate syndromes S1..S5, while the Wikipedia example
+  // (https://en.m.wikipedia.org/wiki/BCH_code#Decoding_of_binary_code_without_unreadable_characters)
+  // uses S1..S6. Either way starting with S1 implies that c=1.
+  //
+  // The Wikipedia example asserts that d=7, which is borne out by the
+  // number of syndromes generated (S1..S6). The spec only shows
+  // S1..S5, which is consistent with d=6.
+  const int c = 1, d = 7;
+
   auto result1 =
-      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy1)));
+      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy1)), c, d);
   auto result2 =
-      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy2)));
+      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy2)), c, d);
   const bool result1_found = !absl::holds_alternative<std::string>(result1);
   const bool result2_found = !absl::holds_alternative<std::string>(result2);
 
