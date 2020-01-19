@@ -40,6 +40,14 @@ cc_binary(
 )
 
 cc_binary(
+    name = "gf_gen_inverse",
+    srcs = ["gf_gen_inverse.cc"],
+    deps = [
+        "//qrcode:gf",
+    ],
+)
+
+cc_binary(
     name = "extractor",
     srcs = ["extractor.cc"],
     visibility = ["//qrcode:__subpackages__"],
