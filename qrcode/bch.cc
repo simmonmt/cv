@@ -17,7 +17,7 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
 }  // namespace
 
 absl::variant<std::vector<bool>, std::string> DecodeBCH(
-    const GF& gf, const std::vector<bool>& bits) {
+    const GF& gf, const std::vector<bool>& bits, int c, int d) {
   const unsigned char s1 = R(gf, bits, 1);
   const unsigned char s3 = R(gf, bits, 3);
   const unsigned char s5 = R(gf, bits, 5);

@@ -14,7 +14,7 @@ using ::testing::VariantWith;
 // value), so this wrapper does it.
 absl::variant<std::vector<bool>, std::string> CallDecodeBCH(
     const GF& gf, const std::vector<bool>& bits) {
-  auto out = DecodeBCH(gf, bits);
+  auto out = DecodeBCH(gf, bits, 1, 7);
   if (absl::holds_alternative<std::string>(out)) {
     std::cout << "decoder returned error: " << absl::get<std::string>(out)
               << "\n";

@@ -10,6 +10,6 @@
 #include "qrcode/gf.h"
 
 absl::variant<std::vector<bool>, std::string> DecodeBCH(
-    const GF& gf, const std::vector<bool>& bits);
+    const GF& gf, const std::vector<bool>& bits, int c, int d);
 
 #endif  // _QRCODE_BCH_H_
