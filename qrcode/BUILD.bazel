@@ -381,6 +381,29 @@ cc_test(
 )
 
 cc_library(
+    name = "bch_new",
+    srcs = ["bch_new.cc"],
+    hdrs = ["bch_new.h"],
+    deps = [
+        ":gf",
+        ":stl_logging",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/types:variant",
+    ],
+)
+
+cc_test(
+    name = "bch_new_test",
+    size = "small",
+    srcs = ["bch_new_test.cc"],
+    deps = [
+        ":bch",
+        ":bch_new",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "testutils",
     testonly = 1,
     srcs = ["testutils.cc"],

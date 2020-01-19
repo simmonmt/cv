@@ -1,7 +1,11 @@
+#include "qrcode/bch_new.h"
+
 #include <bitset>
 #include <cmath>
 #include <iostream>
+#include <sstream>
 
+#include "absl/memory/memory.h"
 #include "absl/types/variant.h"
 #include "qrcode/stl_logging.h"
 
@@ -28,6 +32,15 @@ class Mat {
     return out;
   }
 
+  void Print() {
+    for (int y = 0; y < h(); ++y) {
+      for (int x = 0; x < w(); ++x) {
+        std::cout << " " << std::bitset<8>(Get(x, y));
+      }
+      std::cout << "\n";
+    }
+  }
+
  private:
   const int w_, h_;
   unsigned char* arr_;
@@ -43,7 +56,9 @@ class SqMat : public Mat {
 
 // Calculate the determinant of a square matrix using GF arithmetic.
 unsigned char Determinant(const GF& gf, const SqMat& m) {
-  if (m.sz() == 2) {
+  if (m.sz() == 1) {
+    return m.Get(0, 0);
+  } else if (m.sz() == 2) {
     return gf.Sub(
         {gf.Mult(m.Get(0, 0), m.Get(1, 1)), gf.Mult(m.Get(0, 1), m.Get(1, 0))});
   }
@@ -73,6 +88,29 @@ unsigned char Determinant(const GF& gf, const SqMat& m) {
   }
 
   return total;
+}
+
+std::unique_ptr<SqMat> InvertMatrix(const GF& gf, const SqMat& m,
+                                    unsigned char det) {
+  if (m.sz() > 2) {
+    return nullptr;
+  }
+
+  auto out = absl::make_unique<SqMat>(m.sz());
+  out->Set(0, 0, m.Get(1, 1));
+  out->Set(1, 1, m.Get(0, 0));
+  out->Set(0, 1, m.Get(0, 1));
+  out->Set(1, 0, m.Get(1, 0));
+
+  unsigned char invdet = gf.Inverse(det);
+
+  for (int y = 0; y < out->sz(); ++y) {
+    for (int x = 0; x < out->sz(); ++x) {
+      out->Set(x, y, gf.Mult(invdet, out->Get(x, y)));
+    }
+  }
+
+  return out;
 }
 
 // Evaluate a polynomial described by the coeffs vector. The polynomial looks
@@ -115,6 +153,17 @@ unsigned char DotProduct(const GF& gf, const std::vector<unsigned char>& a,
   return res;
 }
 
+std::string GFVecToString(const GF& gf, const std::vector<unsigned char>& vec) {
+  std::stringstream ss;
+  for (const auto& elem : vec) {
+    if (ss.tellp() != 0) {
+      ss << " ";
+    }
+    ss << std::bitset<8>(elem);
+  }
+  return ss.str();
+}
+
 // Implements the Peterson-Gorenstein-Zeirler algorithm to calculate the error
 // locator polynomial that corresponds to a passed-in set of syndromes. See
 // https://en.m.wikipedia.org/wiki/BCH_code#Peterson-Gorenstein-Zierler_algorithm
@@ -124,13 +173,10 @@ unsigned char DotProduct(const GF& gf, const std::vector<unsigned char>& a,
 // indexes corresponding to their subscripts (i.e. s_c is at index c -- not
 // index 0).
 //
-// It returns a set of coefficients lambda_{0..v} that form the following
+// It returns a set of coefficients lambda_{1..v} that form the following
 // polynomial:
 //
-//   lambda(x) = 1 + lambda_1 * x + lambda_2 * x^2 + ... + lambda_v * x^v
-//
-// The PGZ algorithm doesn't find lambda_0 (it's assumed to be 1), but we return
-// it anyway to ease evaluation of the lambda polynomial.
+//   lambda(x) = lambda_1 * x + lambda_2 * x^2 + ... + lambda_v * x^v
 //
 // An empty vector is returned if an error occurs -- if the polynomial cannot be
 // derived.
@@ -138,7 +184,9 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
                                const std::vector<unsigned char>& syndromes) {
   int v = t;
 
-  for (;;) {
+  for (; v > 0;) {
+    // std::cout << "trying with v " << v << "\n";
+
     // Steps 1 and 2: Make matrices S_{v,v} and C_{v,1}
     SqMat a(v);
     std::vector<unsigned char> cvec(v);
@@ -148,6 +196,11 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
       }
       cvec[y] = syndromes[c + v + y];
     }
+
+    // std::cout << "starting a:\n";
+    // a.Print();
+
+    // std::cout << "starting c: " << GFVecToString(gf, cvec) << "\n";
 
     // There's no code for steps 3 or 4 since they're just defining terms we'll
     // use later, namely that there exists lambda_{v,1} such that
@@ -161,40 +214,18 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
 
     unsigned char det = Determinant(gf, a);
 
-    // Step 6: If the determinant is zero, try again with v-- unless it's
-    // already zero. If it's zero, we've failed -- there's no solution.
+    // std::cout << "determinant is " << std::bitset<8>(det) << "\n";
+
+    // Step 6: If the determinant is zero, try again with v--.
     if (det == 0) {
-      if (v == 0) {
-        return {};
-      } else {
-        v--;
-        continue;
-      }
+      v--;
+      continue;
     }
 
     // Step 5: The determinant is non-zero, which means we can invert S_{v,v}
     // which in turn means we can solve the above equation for
-    // lambda_{v,1}. Inverting S_{v,v} means multiplying it by 1/det(S). We're
-    // doing field math, so calculating 1/det(S) means finding the
-    // multiplicative inverse of det(S).
-    //
-    // We're using small fields, and we don't (yet?) precompute the
-    // multiplicative inverses of field members, so find the multiplicative
-    // inverse of the determinant the hard way.
-    unsigned char invdet;
-    for (const auto& elem : gf.Elements()) {
-      if (gf.Mult(elem, det) == 0b0001) {
-        invdet = elem;
-        break;
-      }
-    }
-
-    // Step 5 (cont): Calculate (1/det(S)) * S
-    for (int y = 0; y < v; ++y) {
-      for (int x = 0; x < v; ++x) {
-        a.Set(x, y, gf.Mult(invdet, a.Get(x, y)));
-      }
-    }
+    // lambda_{v,1}.
+    std::unique_ptr<SqMat> inv_a = InvertMatrix(gf, a, det);
 
     // Step 5 (cont): Calculate ((1/det(S)) * S) * C, which gives us the error
     // locator polynomial coefficients lambda_1, lambda_2, ..., lambda_v,
@@ -204,18 +235,29 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     //
     // The vector `lambda` contains these coefficients in order, starting with a
     // lambda_0=1.
-    std::vector<unsigned char> lambda(a.h() + 1);
-    lambda[0] = 1;
-    for (int i = 0; i < a.h(); ++i) {
-      lambda[v - i] = DotProduct(gf, a.Row(i), cvec);
+    std::vector<unsigned char> lambda(inv_a->h());
+    for (int i = 0; i < inv_a->h(); ++i) {
+      lambda[v - i - 1] = DotProduct(gf, inv_a->Row(i), cvec);
     }
 
     // Step 7: We're done.
     return lambda;
   }
+
+  return {};
 }
 
 unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
+  // std::cout << "R " << alpha_power << "\n";
+  // unsigned char base = gf.Pow(0b0010, alpha_power);
+  // unsigned char out_bits = 0;
+  // for (int i = 0; i < poly.size(); ++i) {
+  //   if (poly[i]) {
+  //     out_bits = gf.Add({out_bits, gf.Pow(base, i)});
+  //   }
+  // }
+  // return out_bits;
+
   unsigned char out_bits = 0;
   for (int i = 0; i < poly.size(); ++i) {
     if (poly[i]) {
@@ -227,8 +269,26 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
 
 }  // namespace
 
-absl::variant<std::vector<bool>, std::string> DecodeBCH(
+absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
     const GF& gf, const std::vector<bool>& bits, int c, int d) {
+  // for (const unsigned char mts : gf.PowersOfAlpha()) {
+  //   // unsigned char mts = 0b0010;
+  //   std::cout << "mts " << std::bitset<4>(mts) << " = "
+  //             << std::bitset<4>(gf.Add({gf.Pow(mts, 14), gf.Pow(mts, 13),
+  //                                       gf.Pow(mts, 11), gf.Pow(mts, 10),
+  //                                       gf.Pow(mts, 9), /*gf.Pow(mts, 5),*/
+  //                                       gf.Pow(mts, 4), gf.Pow(mts, 2)}))
+  //             << "\n";
+  // }
+
+  // {
+  //   auto zeros = FindZeros(gf, {0b0001, 0b0001, 0b0011});
+  //   auto pos1 = std::pow(2, gf.m()) - 1 - gf.ToAlphaPow(zeros[0]);
+  //   auto pos2 = std::pow(2, gf.m()) - 1 - gf.ToAlphaPow(zeros[1]);
+  //   std::cout << "MTS " << GFVecToString(gf, zeros) << " pos " << pos1 << " "
+  //             << pos2 << "\n";
+  // }
+
   int s_lo = c;
   int s_hi = c + d - 2;
 
@@ -243,46 +303,99 @@ absl::variant<std::vector<bool>, std::string> DecodeBCH(
     }
   }
 
+  // for (int i = s_lo; i <= s_hi; ++i) {
+  //   std::cout << "syndrome " << i << ": " << std::bitset<8>(syndromes[i])
+  //             << "\n";
+  // }
+
   if (all_zero) {
     return bits;
   }
 
   int t = (d - 1) / 2;
 
+  // std::cout << "t=" << t << "\n";
+
   std::vector<unsigned char> lambda = PGZ(gf, c, t, syndromes);
   if (lambda.empty()) {
     return "no lambda found";
   }
+  lambda.insert(lambda.begin(), 1);
+
+  // std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
 
   std::vector<unsigned char> zeros = FindZeros(gf, lambda);
   if (zeros.empty()) {
     return "no zeros found";
   }
 
+  // std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
+
   std::vector<bool> out = bits;
   int lim = std::pow(2, gf.m()) - 1;
   for (const unsigned char zero : zeros) {
     int pos = lim - gf.ToAlphaPow(zero);
+    // std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
+    //           << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
     out[pos] = !out[pos];
   }
+
+  // std::cout << "1110 * 0011 = " << std::bitset<8>(gf.Mult(0b1110, 0b0011))
+  //           << "\n";
+  // std::cout << "1110 * 0011 + 1 = "
+  //           << std::bitset<8>(gf.Add({0b0001, gf.Mult(0b1110, 0b0011)}))
+  //           << "\n";
 
   return out;
 }
 
-int main(int argc, char** argv) {
-  GF16 gf;
+// bool RunTest(const std::vector<bool>& expected, const std::vector<bool>&
+// in)
+// {
+//   auto maybe_result = DecodeBCH(gf, in, 1, 7);
+//   if (absl::holds_alternative<std::string>(maybe_result)) {
+//     std::cerr << "bits " << i << "," << j
+//               << " error: " << absl::get<std::string>(maybe_result) <<
+//               "\n";
+//     return false;
+//   }
 
-  std::vector<bool> in = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
-  in[13] = !in[13];
-  in[5] = !in[5];
+//   std::vector<bool> result =
+//       std::move(absl::get<std::vector<bool>>(maybe_result));
+//   if (result != ref) {
+//     std::cerr << "bits " << i << "," << j << " mismatch in " << in << " out
+//     "
+//               << result << "\n";
+//     ++num_failure;
+//     continue;
+//   }
 
-  auto result = DecodeBCH(gf, in, 1, 7);
-  if (absl::holds_alternative<std::string>(result)) {
-    std::cerr << absl::get<std::string>(result) << "\n";
-    return 1;
-  }
+//   num_success++;
+// }
 
-  std::cout << absl::get<std::vector<bool>>(result) << "\n";
+// int main(int argc, char** argv) {
+//   GF16 gf;
 
-  return 0;
-}
+//   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
+
+//   int num_success = 0, num_failure = 0;
+//   for (int i = 0; i < ref.size(); ++i) {
+//     for (int j = 0; j < ref.size(); ++j) {
+//       std::vector<bool> in = ref;
+//       in[i] = !in[i];
+//       in[j] = !in[j];
+
+//       if (!RunTest(gf, ref, in)) {
+//         ++num_failure;
+//         continue;
+//       }
+
+//       ++numsuccess;
+//     }
+//   }
+
+//   std::cout << "success = " << num_success << "; failure = " << num_failure
+//             << "\n";
+
+//   return 0;
+// }
