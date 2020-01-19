@@ -63,6 +63,8 @@ unsigned char GF16::Mult(unsigned char m1, unsigned char m2) const {
          (out_a & 1);
 }
 
+unsigned char GF16::Inverse(unsigned char x) const { return kInverse[x]; }
+
 unsigned char GF16::Pow(unsigned char x, int y) const {
   if (y == 0) {
     return 1;
@@ -75,6 +77,9 @@ unsigned char GF16::Pow(unsigned char x, int y) const {
 unsigned char GF16::AlphaPow(int y) const { return kPowersOfAlpha[y % 15]; }
 
 int GF16::ToAlphaPow(unsigned char x) const { return kElementsToPowers[x]; }
+
+const unsigned char GF16::kInverse[16] = {0,  1, 9,  14, 13, 11, 7, 6,
+                                          15, 2, 12, 5,  10, 4,  3, 8};
 
 constexpr unsigned char GF256::kPowersOfAlpha[];
 constexpr unsigned char GF256::kElements[];
@@ -154,6 +159,8 @@ unsigned char GF256::Mult(unsigned char m1, unsigned char m2) const {
          ((out_b & 1) << 1) | (out_a & 1);
 }
 
+unsigned char GF256::Inverse(unsigned char x) const { return kInverse[x]; }
+
 unsigned char GF256::Pow(unsigned char x, int y) const {
   if (y == 0) {
     return 1;
@@ -166,3 +173,24 @@ unsigned char GF256::Pow(unsigned char x, int y) const {
 unsigned char GF256::AlphaPow(int y) const { return kPowersOfAlpha[y % 255]; }
 
 int GF256::ToAlphaPow(unsigned char x) const { return kElementsToPowers[x]; }
+
+const unsigned char GF256::kInverse[256] = {
+    0,   1,   142, 244, 71,  167, 122, 186, 173, 157, 221, 152, 61,  170, 93,
+    150, 216, 114, 192, 88,  224, 62,  76,  102, 144, 222, 85,  128, 160, 131,
+    75,  42,  108, 237, 57,  81,  96,  86,  44,  138, 112, 208, 31,  74,  38,
+    139, 51,  110, 72,  137, 111, 46,  164, 195, 64,  94,  80,  34,  207, 169,
+    171, 12,  21,  225, 54,  95,  248, 213, 146, 78,  166, 4,   48,  136, 43,
+    30,  22,  103, 69,  147, 56,  35,  104, 140, 129, 26,  37,  97,  19,  193,
+    203, 99,  151, 14,  55,  65,  36,  87,  202, 91,  185, 196, 23,  77,  82,
+    141, 239, 179, 32,  236, 47,  50,  40,  209, 17,  217, 233, 251, 218, 121,
+    219, 119, 6,   187, 132, 205, 254, 252, 27,  84,  161, 29,  124, 204, 228,
+    176, 73,  49,  39,  45,  83,  105, 2,   245, 24,  223, 68,  79,  155, 188,
+    15,  92,  11,  220, 189, 148, 172, 9,   199, 162, 28,  130, 159, 198, 52,
+    194, 70,  5,   206, 59,  13,  60,  156, 8,   190, 183, 135, 229, 238, 107,
+    235, 242, 191, 175, 197, 100, 7,   123, 149, 154, 174, 182, 18,  89,  165,
+    53,  101, 184, 163, 158, 210, 247, 98,  90,  133, 125, 168, 58,  41,  113,
+    200, 246, 249, 67,  215, 214, 16,  115, 118, 120, 153, 10,  25,  145, 20,
+    63,  230, 240, 134, 177, 226, 241, 250, 116, 243, 180, 109, 33,  178, 106,
+    227, 231, 181, 234, 3,   143, 211, 201, 66,  212, 232, 117, 127, 255, 126,
+    253,
+};

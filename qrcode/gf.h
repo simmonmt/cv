@@ -46,6 +46,9 @@ class GF {
   // Multiplies elements of the field.
   virtual unsigned char Mult(unsigned char m1, unsigned char m2) const = 0;
 
+  // Returns the multiplicative inverse of a non-zero field member.
+  virtual unsigned char Inverse(unsigned char x) const = 0;
+
   // Returns x^y, where x is an element of the field.
   virtual unsigned char Pow(unsigned char x, int y) const = 0;
 
@@ -69,11 +72,14 @@ class GF16 : public GF {
 
   unsigned char Add(std::initializer_list<unsigned char> elems) const override;
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
+  unsigned char Inverse(unsigned char x) const override;
   unsigned char Pow(unsigned char x, int y) const override;
   unsigned char AlphaPow(int y) const override;
   int ToAlphaPow(unsigned char x) const override;
 
  private:
+  static const unsigned char kInverse[16];
+
   static constexpr unsigned char kPowersOfAlpha[15] = {
       1, 2, 4, 8, 3, 6, 12, 11, 5, 10, 7, 14, 15, 13, 9,
   };
@@ -107,6 +113,7 @@ class GF256 : public GF {
 
   unsigned char Add(std::initializer_list<unsigned char> elems) const override;
   unsigned char Mult(unsigned char m1, unsigned char m2) const override;
+  unsigned char Inverse(unsigned char x) const override;
   unsigned char Pow(unsigned char x, int y) const override;
   unsigned char AlphaPow(int y) const override;
   int ToAlphaPow(unsigned char x) const override;
@@ -182,6 +189,10 @@ class GF256 : public GF {
       79,  174, 213, 233, 230, 231, 173, 232, 116, 214, 244, 234, 168, 80,  88,
       175,
   };
+
+  // Contains multiplicative inverses for non-zero elements of the field.
+  //   kInverse[kPowersOfAlpha[x]] * kPowersOfAlpha[x] = 1
+  static const unsigned char kInverse[256];
 };
 
 #endif  // _QRCODE_GF_H_

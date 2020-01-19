@@ -32,6 +32,18 @@ void TestMult(const GF& gf) {
   }
 }
 
+void TestInverse(const GF& gf) {
+  const std::vector<unsigned char>& powers_of_alpha = gf.PowersOfAlpha();
+
+  for (int i = 0; i < powers_of_alpha.size(); ++i) {
+    const unsigned char value = powers_of_alpha[i];
+    const unsigned char inverse = gf.Inverse(value);
+    EXPECT_EQ(1, gf.Mult(value, inverse))
+        << "value " << std::bitset<8>(value) << " inverse "
+        << std::bitset<8>(inverse) << "\n";
+  }
+}
+
 TEST(GF16Test, Add) {
   GF16 gf16;
 
@@ -43,6 +55,8 @@ TEST(GF16Test, Add) {
 }
 
 TEST(GF16Test, Mult) { TestMult(GF16()); }
+
+TEST(GF16Test, Inverse) { TestInverse(GF16()); }
 
 TEST(GF16Test, Pow) {
   GF16 gf;
@@ -66,6 +80,8 @@ TEST(GF256Test, Add) {
 }
 
 TEST(GF256Test, Mult) { TestMult(GF256()); }
+
+TEST(GF256Test, Inverse) { TestInverse(GF256()); }
 
 TEST(GF256Test, Pow) {
   GF256 gf;
