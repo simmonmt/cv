@@ -74,19 +74,7 @@ unsigned char GFSqMat::CalculateDeterminant() const {
   unsigned char total = 0;
   GFSqMat sub(gf(), sz() - 1);
   for (int i = 0; i < sz(); ++i) {
-    for (int row = 1; row < sz(); ++row) {
-      int sub_col = 0;
-      for (int col = 0; col < sz(); ++col) {
-        if (col == i) {
-          continue;
-        }
-
-        sub.Set(row - 1, sub_col, Get(row, col));
-        sub_col++;
-      }
-    }
-
-    unsigned char d = gf().Mult(Get(0, i), sub.Determinant());
+    unsigned char d = gf().Mult(Get(0, i), SubDeterminant(0, i, &sub));
 
     if (i % 2 == 0) {
       total = gf().Add({total, d});
@@ -96,6 +84,30 @@ unsigned char GFSqMat::CalculateDeterminant() const {
   }
 
   return total;
+}
+
+unsigned char GFSqMat::SubDeterminant(int exclude_row, int exclude_col,
+                                      GFSqMat* sub) const {
+  int sub_row = 0, sub_col = 0;
+  for (int row = 0; row < sz(); ++row) {
+    if (row == exclude_row) {
+      continue;
+    }
+
+    for (int col = 0; col < sz(); ++col) {
+      if (col == exclude_col) {
+        continue;
+      }
+
+      sub->Set(sub_row, sub_col, Get(row, col));
+      ++sub_col;
+    }
+
+    ++sub_row;
+    sub_col = 0;
+  }
+
+  return sub->Determinant();
 }
 
 std::unique_ptr<GFSqMat> GFSqMat::Inverse() const {
@@ -123,5 +135,38 @@ std::unique_ptr<GFSqMat> GFSqMat::Inverse() const {
     return out;
   }
 
-  return nullptr;
+  // Invert square matrices larger than 2x2.
+  // Source:
+  // https://www.mathsisfun.com/algebra/matrix-inverse-minors-cofactors-adjugate.html
+
+  // Step 1: Matrix of minors
+  GFSqMat sub(gf(), sz() - 1);
+  for (int row = 0; row < sz(); ++row) {
+    for (int col = 0; col < sz(); ++col) {
+      out->Set(row, col, SubDeterminant(row, col, &sub));
+    }
+  }
+
+  // Step 2: Matrix of Cofactors
+  // We can skip this because negation isn't a thing in GF(2^x)
+
+  // Step 3: Transpose
+  // Step 4: Multiply by 1/Determinant
+  unsigned char invdet = gf().Inverse(Determinant());
+  for (int row = 0; row < sz(); ++row) {
+    for (int col = 0; col <= row; ++col) {
+      if (row == col) {
+        // On-diagonal, so just multiply
+        out->Set(row, col, gf().Mult(invdet, out->Get(row, col)));
+        continue;
+      }
+
+      // Off-diagonal, so transpose and multiply
+      unsigned char tmp = out->Get(row, col);
+      out->Set(row, col, gf().Mult(invdet, out->Get(col, row)));
+      out->Set(col, row, gf().Mult(invdet, tmp));
+    }
+  }
+
+  return out;
 }

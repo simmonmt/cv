@@ -73,6 +73,12 @@ class GFSqMat : public GFMat {
 
   unsigned char CalculateDeterminant() const;
 
+  // Calculates the determinant of a subset of this matrix. Specifically, the
+  // submatrix formed by excluding the specified row and column. The caller must
+  // specify the submatrix, which must be of size sz()-1.
+  unsigned char SubDeterminant(int exclude_row, int exclude_col,
+                               GFSqMat* sub) const;
+
   // Mutable because we cache the determinant, which is expensive to calculate.
   mutable absl::optional<unsigned char> det_;
 };

@@ -133,4 +133,15 @@ TEST_F(GFSqMatTest, Inverse2x2) {
   EXPECT_TRUE(IsIdentityMatrix(*res));
 }
 
+TEST_F(GFSqMatTest, Inverse3x3) {
+  GFSqMat mat(gf_, 3);
+  mat.Load({{0b0001, 0b0010, 0b0011},
+            {0b0100, 0b0101, 0b0111},
+            {0b1000, 0b1001, 0b1010}});
+
+  std::unique_ptr<GFSqMat> inv = mat.Inverse();
+  std::unique_ptr<GFMat> res = mat.Mult(*inv);
+  EXPECT_TRUE(IsIdentityMatrix(*res));
+}
+
 }  // namespace
