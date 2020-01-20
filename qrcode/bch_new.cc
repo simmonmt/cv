@@ -1,9 +1,6 @@
 #include "qrcode/bch_new.h"
 
-#include <bitset>
 #include <cmath>
-#include <iostream>
-#include <sstream>
 
 #include "absl/memory/memory.h"
 #include "absl/types/variant.h"
@@ -54,17 +51,6 @@ unsigned char DotProduct(const GF& gf, const std::vector<unsigned char>& a,
   return res;
 }
 
-std::string GFVecToString(const GF& gf, const std::vector<unsigned char>& vec) {
-  std::stringstream ss;
-  for (const auto& elem : vec) {
-    if (ss.tellp() != 0) {
-      ss << " ";
-    }
-    ss << std::bitset<8>(elem);
-  }
-  return ss.str();
-}
-
 // Implements the Peterson-Gorenstein-Zeirler algorithm to calculate the error
 // locator polynomial that corresponds to a passed-in set of syndromes. See
 // https://en.m.wikipedia.org/wiki/BCH_code#Peterson-Gorenstein-Zierler_algorithm
@@ -86,8 +72,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
   int v = t;
 
   for (; v > 0;) {
-    // std::cout << "PGZ attempt with v " << v << "\n";
-
     // Steps 1 and 2: Make matrices S_{v,v} and C_{v,1}
     GFSqMat a(gf, v);
     std::vector<unsigned char> cvec(v);
@@ -97,10 +81,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
       }
       cvec[y] = syndromes[c + v + y];
     }
-
-    // std::cout << "starting a:\n";
-    // a.Print();
-    // std::cout << "starting c: " << GFVecToString(gf, cvec) << "\n";
 
     // There's no code for steps 3 or 4 since they're just defining terms we'll
     // use later, namely that there exists lambda_{v,1} such that
@@ -113,8 +93,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     // subtraction, so PGZ's -C_{v,1} = C_{v,1}.
 
     unsigned char det = a.Determinant();
-
-    // std::cout << "determinant is " << std::bitset<8>(det) << "\n";
 
     // Step 6: If the determinant is zero, try again with v--.
     if (det == 0) {
@@ -143,8 +121,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     for (int i = 0; i < inv_a->h(); ++i) {
       lambda[v - i - 1] = DotProduct(gf, inv_a->Row(i), cvec);
     }
-
-    // std::cout << "found lambda " << GFVecToString(gf, lambda) << "\n";
 
     // Step 7: We're done.
     return lambda;
@@ -181,18 +157,11 @@ absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
     }
   }
 
-  // for (int i = s_lo; i <= s_hi; ++i) {
-  //   std::cout << "syndrome " << i << ": " << std::bitset<8>(syndromes[i])
-  //             << "\n";
-  // }
-
   if (all_zero) {
     return bits;
   }
 
   int t = (d - 1) / 2;
-
-  // std::cout << "t=" << t << "\n";
 
   std::vector<unsigned char> lambda = PGZ(gf, c, t, syndromes);
   if (lambda.empty()) {
@@ -200,21 +169,15 @@ absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
   }
   lambda.insert(lambda.begin(), 1);
 
-  // std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
-
   std::vector<unsigned char> zeros = FindZeros(gf, lambda);
   if (zeros.empty()) {
     return "no zeros found";
   }
 
-  // std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
-
   std::vector<bool> out = bits;
   int lim = std::pow(2, gf.m()) - 1;
   for (const unsigned char zero : zeros) {
     int pos = (lim - gf.ToAlphaPow(zero)) % lim;
-    // std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
-    //           << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
     out[pos] = !out[pos];
   }
 
