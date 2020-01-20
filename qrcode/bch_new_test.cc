@@ -48,7 +48,7 @@ TEST_F(DecodeBCHTest, MTS) {
 
   std::vector<bool> in = ref;
   in[13] = !in[13];
-  in[5] = !in[5];
+  in[0] = !in[0];
 
   EXPECT_THAT(RunTest(gf, in, c, d),
               VariantWith<std::vector<bool>>(ElementsAreArray(ref)));

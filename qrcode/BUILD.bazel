@@ -361,6 +361,27 @@ cc_test(
 )
 
 cc_library(
+    name = "gf_mat",
+    srcs = ["gf_mat.cc"],
+    hdrs = ["gf_mat.h"],
+    deps = [
+        ":gf",
+        "@com_google_absl//absl/memory",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "gf_mat_test",
+    size = "small",
+    srcs = ["gf_mat_test.cc"],
+    deps = [
+        ":gf_mat",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "bch",
     srcs = ["bch.cc"],
     hdrs = ["bch.h"],
@@ -386,6 +407,7 @@ cc_library(
     hdrs = ["bch_new.h"],
     deps = [
         ":gf",
+        ":gf_mat",
         ":stl_logging",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/types:variant",

@@ -10,108 +10,9 @@
 #include "qrcode/stl_logging.h"
 
 #include "qrcode/gf.h"
+#include "qrcode/gf_mat.h"
 
 namespace {
-
-class Mat {
- public:
-  Mat(int w, int h) : w_(w), h_(h), arr_(new unsigned char[w * h]) {}
-  virtual ~Mat() = default;
-
-  int w() const { return w_; }
-  int h() const { return h_; }
-
-  unsigned char Get(int x, int y) const { return arr_[y * w_ + x]; }
-  void Set(int x, int y, unsigned char v) { arr_[y * w_ + x] = v; }
-
-  std::vector<unsigned char> Row(int row) {
-    std::vector<unsigned char> out(w_);
-    for (int i = 0; i < w_; ++i) {
-      out[i] = Get(i, row);
-    }
-    return out;
-  }
-
-  void Print() {
-    for (int y = 0; y < h(); ++y) {
-      for (int x = 0; x < w(); ++x) {
-        std::cout << " " << std::bitset<8>(Get(x, y));
-      }
-      std::cout << "\n";
-    }
-  }
-
- private:
-  const int w_, h_;
-  unsigned char* arr_;
-};
-
-// A square matrix
-class SqMat : public Mat {
- public:
-  SqMat(int sz) : Mat(sz, sz) {}
-
-  int sz() const { return w(); }
-};
-
-// Calculate the determinant of a square matrix using GF arithmetic.
-unsigned char Determinant(const GF& gf, const SqMat& m) {
-  if (m.sz() == 1) {
-    return m.Get(0, 0);
-  } else if (m.sz() == 2) {
-    return gf.Sub(
-        {gf.Mult(m.Get(0, 0), m.Get(1, 1)), gf.Mult(m.Get(0, 1), m.Get(1, 0))});
-  }
-
-  unsigned char total = 0;
-  SqMat sub(m.sz() - 1);
-  for (int i = 0; i < m.sz(); ++i) {
-    for (int y = 1; y < m.sz(); ++y) {
-      int subx = 0;
-      for (int x = 0; x < m.sz(); ++x) {
-        if (x == i) {
-          continue;
-        }
-
-        sub.Set(subx, y - 1, m.Get(x, y));
-        subx++;
-      }
-    }
-
-    unsigned char d = gf.Mult(m.Get(i, 0), Determinant(gf, sub));
-
-    if (i % 2 == 0) {
-      total = gf.Add({total, d});
-    } else {
-      total = gf.Sub({total, d});
-    }
-  }
-
-  return total;
-}
-
-std::unique_ptr<SqMat> InvertMatrix(const GF& gf, const SqMat& m,
-                                    unsigned char det) {
-  if (m.sz() > 2) {
-    return nullptr;
-  }
-
-  auto out = absl::make_unique<SqMat>(m.sz());
-  out->Set(0, 0, m.Get(1, 1));
-  out->Set(1, 1, m.Get(0, 0));
-  out->Set(0, 1, m.Get(0, 1));
-  out->Set(1, 0, m.Get(1, 0));
-
-  unsigned char invdet = gf.Inverse(det);
-
-  for (int y = 0; y < out->sz(); ++y) {
-    for (int x = 0; x < out->sz(); ++x) {
-      out->Set(x, y, gf.Mult(invdet, out->Get(x, y)));
-    }
-  }
-
-  return out;
-}
 
 // Evaluate a polynomial described by the coeffs vector. The polynomial looks
 // like this:
@@ -185,10 +86,10 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
   int v = t;
 
   for (; v > 0;) {
-    // std::cout << "trying with v " << v << "\n";
+    // std::cout << "PGZ attempt with v " << v << "\n";
 
     // Steps 1 and 2: Make matrices S_{v,v} and C_{v,1}
-    SqMat a(v);
+    GFSqMat a(gf, v);
     std::vector<unsigned char> cvec(v);
     for (int y = 0; y < v; ++y) {
       for (int x = 0; x < v; ++x) {
@@ -199,7 +100,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
 
     // std::cout << "starting a:\n";
     // a.Print();
-
     // std::cout << "starting c: " << GFVecToString(gf, cvec) << "\n";
 
     // There's no code for steps 3 or 4 since they're just defining terms we'll
@@ -212,7 +112,7 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     // Note that because we're in a GF(2^x) field addition is the same as
     // subtraction, so PGZ's -C_{v,1} = C_{v,1}.
 
-    unsigned char det = Determinant(gf, a);
+    unsigned char det = a.Determinant();
 
     // std::cout << "determinant is " << std::bitset<8>(det) << "\n";
 
@@ -225,7 +125,7 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     // Step 5: The determinant is non-zero, which means we can invert S_{v,v}
     // which in turn means we can solve the above equation for
     // lambda_{v,1}.
-    std::unique_ptr<SqMat> inv_a = InvertMatrix(gf, a, det);
+    std::unique_ptr<GFSqMat> inv_a = a.Inverse();
 
     // Step 5 (cont): Calculate ((1/det(S)) * S) * C, which gives us the error
     // locator polynomial coefficients lambda_1, lambda_2, ..., lambda_v,
@@ -239,6 +139,8 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     for (int i = 0; i < inv_a->h(); ++i) {
       lambda[v - i - 1] = DotProduct(gf, inv_a->Row(i), cvec);
     }
+
+    // std::cout << "found lambda " << GFVecToString(gf, lambda) << "\n";
 
     // Step 7: We're done.
     return lambda;
