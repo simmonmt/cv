@@ -5,8 +5,6 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
-#include "qrcode/bch.h"
-
 namespace {
 
 using ::testing::ElementsAreArray;
@@ -23,19 +21,11 @@ class DecodeBCHTest : public ::testing::Test {
     }
     return result;
   }
-
-  absl::variant<std::vector<bool>, std::string> RunOldTest(
-      const GF& gf, const std::vector<bool>& in, int c, int d) {
-    auto result = DecodeBCH(gf, in, c, d);
-    if (absl::holds_alternative<std::string>(result)) {
-      ADD_FAILURE() << "WARNING: decode failed: "
-                    << absl::get<std::string>(result);
-    }
-    return result;
-  }
 };
 
-TEST_F(DecodeBCHTest, MTS) {
+// Use this test to investigate a single failure identified by the Exhaustive
+// test.
+TEST_F(DecodeBCHTest, Point) {
   GF16 gf;
   const int c = 1, d = 7;
   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
@@ -45,8 +35,6 @@ TEST_F(DecodeBCHTest, MTS) {
   in[0] = !in[0];
 
   EXPECT_THAT(RunTest(gf, in, c, d),
-              VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
-  EXPECT_THAT(RunOldTest(gf, in, c, d),
               VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
 }
 
