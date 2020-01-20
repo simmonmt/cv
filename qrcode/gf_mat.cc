@@ -98,22 +98,22 @@ std::unique_ptr<GFSqMat> GFSqMat::Inverse() const {
     return out;
   }
 
-  if (sz() > 2) {
-    return nullptr;
-  }
+  if (sz() == 2) {
+    out->Set(0, 0, Get(1, 1));
+    out->Set(1, 1, Get(0, 0));
+    out->Set(1, 0, Get(1, 0));
+    out->Set(0, 1, Get(0, 1));
 
-  out->Set(0, 0, Get(1, 1));
-  out->Set(1, 1, Get(0, 0));
-  out->Set(1, 0, Get(1, 0));
-  out->Set(0, 1, Get(0, 1));
+    unsigned char invdet = gf().Inverse(Determinant());
 
-  unsigned char invdet = gf().Inverse(Determinant());
-
-  for (int y = 0; y < out->sz(); ++y) {
-    for (int x = 0; x < out->sz(); ++x) {
-      out->Set(x, y, gf().Mult(invdet, out->Get(x, y)));
+    for (int y = 0; y < out->sz(); ++y) {
+      for (int x = 0; x < out->sz(); ++x) {
+        out->Set(x, y, gf().Mult(invdet, out->Get(x, y)));
+      }
     }
+
+    return out;
   }
 
-  return out;
+  return nullptr;
 }

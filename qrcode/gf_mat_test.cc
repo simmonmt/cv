@@ -121,7 +121,16 @@ bool IsIdentityMatrix(const GFMat& mat) {
   return true;
 }
 
-TEST_F(GFSqMatTest, Inverse) {
+TEST_F(GFSqMatTest, Inverse1x1) {
+  GFSqMat mat(gf_, 1);
+  mat.Set(0, 0, 0b1011);
+
+  std::unique_ptr<GFSqMat> inv = mat.Inverse();
+  std::unique_ptr<GFMat> res = mat.Mult(*inv);
+  EXPECT_TRUE(IsIdentityMatrix(*res));
+}
+
+TEST_F(GFSqMatTest, Inverse2x2) {
   GFSqMat mat(gf_, 2);
   mat.Set(0, 0, 0b1011);
   mat.Set(0, 1, 0b1001);
