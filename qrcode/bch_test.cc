@@ -1,4 +1,4 @@
-#include "qrcode/bch_new.h"
+#include "qrcode/bch.h"
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
@@ -14,7 +14,7 @@ class DecodeBCHTest : public ::testing::Test {
  public:
   absl::variant<std::vector<bool>, std::string> RunTest(
       const GF& gf, const std::vector<bool>& in, int c, int d) {
-    auto result = DecodeBCHNew(gf, in, c, d);
+    auto result = DecodeBCH(gf, in, c, d);
     if (absl::holds_alternative<std::string>(result)) {
       ADD_FAILURE() << "WARNING: decode failed: "
                     << absl::get<std::string>(result);

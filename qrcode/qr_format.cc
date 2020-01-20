@@ -1,6 +1,6 @@
 #include "qrcode/qr_format.h"
 
-#include "qrcode/bch_new.h"
+#include "qrcode/bch.h"
 #include "qrcode/gf.h"
 
 namespace {
@@ -81,10 +81,10 @@ absl::variant<QRFormat, std::string> DecodeFormat(const QRCodeArray& array) {
   // S1..S5, which is consistent with d=6.
   const int c = 1, d = 7;
 
-  auto result1 = DecodeBCHNew(
-      gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy1)), c, d);
-  auto result2 = DecodeBCHNew(
-      gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy2)), c, d);
+  auto result1 =
+      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy1)), c, d);
+  auto result2 =
+      DecodeBCH(gf16, XORFormat(FindOneFormatCopy(array, kFormatCopy2)), c, d);
   const bool result1_found = !absl::holds_alternative<std::string>(result1);
   const bool result2_found = !absl::holds_alternative<std::string>(result2);
 

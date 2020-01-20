@@ -382,9 +382,9 @@ cc_test(
 )
 
 cc_library(
-    name = "bch_new",
-    srcs = ["bch_new.cc"],
-    hdrs = ["bch_new.h"],
+    name = "bch",
+    srcs = ["bch.cc"],
+    hdrs = ["bch.h"],
     deps = [
         ":gf",
         ":gf_mat",
@@ -395,11 +395,11 @@ cc_library(
 )
 
 cc_test(
-    name = "bch_new_test",
+    name = "bch_test",
     size = "small",
-    srcs = ["bch_new_test.cc"],
+    srcs = ["bch_test.cc"],
     deps = [
-        ":bch_new",
+        ":bch",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -544,7 +544,7 @@ cc_library(
     srcs = ["qr_format.cc"],
     hdrs = ["qr_format.h"],
     deps = [
-        ":bch_new",
+        ":bch",
         ":gf",
         ":qr_array",
         ":qr_error_characteristics",

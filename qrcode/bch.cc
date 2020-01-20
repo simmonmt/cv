@@ -1,4 +1,4 @@
-#include "qrcode/bch_new.h"
+#include "qrcode/bch.h"
 
 #include <cmath>
 
@@ -141,7 +141,7 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
 
 }  // namespace
 
-absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
+absl::variant<std::vector<bool>, std::string> DecodeBCH(
     const GF& gf, const std::vector<bool>& bits, int c, int d) {
   int s_lo = c;
   int s_hi = c + d - 2;
