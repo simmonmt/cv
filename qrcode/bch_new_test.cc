@@ -72,6 +72,9 @@ TEST_F(DecodeBCHTest, Double) {
   GF16 gf;
   const int c = 1, d = 7;
 
+  std::vector<std::pair<int, int>> failures;
+  int num_successes = 0;
+
   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
   for (int i = 0; i < ref.size(); ++i) {
     for (int j = 0; j < ref.size(); ++j) {
@@ -83,11 +86,19 @@ TEST_F(DecodeBCHTest, Double) {
       in[i] = !in[i];
       in[j] = !in[j];
 
-      EXPECT_THAT(RunTest(gf, in, c, d),
-                  VariantWith<std::vector<bool>>(ElementsAreArray(ref)))
-          << "failed for " << i << " and " << j;
+      auto result = RunTest(gf, in, c, d);
+      if (!absl::holds_alternative<std::vector<bool>>(result) ||
+          absl::get<std::vector<bool>>(result) != ref) {
+        failures.emplace_back(i, j);
+      } else {
+        ++num_successes;
+      }
     }
   }
+
+  std::cout << "#successes " << num_successes << " #failures "
+            << failures.size() << "\n";
+  FAIL() << "failures: " << ::testing::PrintToString(failures) << "\n";
 }
 
 }  // namespace
