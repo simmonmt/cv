@@ -382,26 +382,6 @@ cc_test(
 )
 
 cc_library(
-    name = "bch",
-    srcs = ["bch.cc"],
-    hdrs = ["bch.h"],
-    deps = [
-        ":gf",
-        "@com_google_absl//absl/types:variant",
-    ],
-)
-
-cc_test(
-    name = "bch_test",
-    srcs = ["bch_test.cc"],
-    deps = [
-        ":bch",
-        "@com_google_absl//absl/memory",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_library(
     name = "bch_new",
     srcs = ["bch_new.cc"],
     hdrs = ["bch_new.h"],
