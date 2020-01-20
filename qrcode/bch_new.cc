@@ -126,6 +126,10 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     // which in turn means we can solve the above equation for
     // lambda_{v,1}.
     std::unique_ptr<GFSqMat> inv_a = a.Inverse();
+    if (inv_a == nullptr) {
+      std::cerr << "failed to invert\n";  // this shouldn't happen
+      return {};
+    }
 
     // Step 5 (cont): Calculate S^{-1} * C, which gives us the error
     // locator polynomial coefficients lambda_1, lambda_2, ..., lambda_v,
