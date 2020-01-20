@@ -1,5 +1,8 @@
 #include "qrcode/gf.h"
 
+#include <bitset>
+#include <sstream>
+
 #include "absl/base/macros.h"
 
 constexpr unsigned char GF16::kPowersOfAlpha[];
@@ -194,3 +197,14 @@ const unsigned char GF256::kInverse[256] = {
     227, 231, 181, 234, 3,   143, 211, 201, 66,  212, 232, 117, 127, 255, 126,
     253,
 };
+
+std::string VecToString(const GF& gf, const std::vector<unsigned char>& vec) {
+  std::stringstream ss;
+  for (const auto& elem : vec) {
+    if (ss.tellp() != 0) {
+      ss << " ";
+    }
+    ss << std::bitset<8>(elem);
+  }
+  return ss.str();
+}

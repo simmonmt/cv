@@ -195,4 +195,8 @@ class GF256 : public GF {
   static const unsigned char kInverse[256];
 };
 
+// Returns a comma-delimited list of values from vec, with each value formatted
+// as an 8-bit base 2 value.
+std::string VecToString(const GF& gf, const std::vector<unsigned char>& vec);
+
 #endif  // _QRCODE_GF_H_
