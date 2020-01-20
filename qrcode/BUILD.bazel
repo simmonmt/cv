@@ -421,6 +421,7 @@ cc_test(
     deps = [
         ":bch",
         ":bch_new",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
 )

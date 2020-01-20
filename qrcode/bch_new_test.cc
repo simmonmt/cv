@@ -1,5 +1,7 @@
 #include "qrcode/bch_new.h"
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -33,14 +35,6 @@ class DecodeBCHTest : public ::testing::Test {
   }
 };
 
-TEST_F(DecodeBCHTest, NoError) {
-  GF16 gf;
-  const int c = 1, d = 7;
-  std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
-  EXPECT_THAT(RunTest(gf, ref, c, d),
-              VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
-}
-
 TEST_F(DecodeBCHTest, MTS) {
   GF16 gf;
   const int c = 1, d = 7;
@@ -56,57 +50,40 @@ TEST_F(DecodeBCHTest, MTS) {
               VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
 }
 
-TEST_F(DecodeBCHTest, Single) {
+// Tests 0- through 3-bit errors
+TEST_F(DecodeBCHTest, Exhaustive) {
   GF16 gf;
   const int c = 1, d = 7;
 
-  std::vector<int> failures;
+  std::vector<std::string> failures;
   int num_successes = 0;
 
   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
-  for (int i = 0; i < ref.size(); ++i) {
-    std::vector<bool> in = ref;
-    in[i] = !in[i];
+  for (int i = 0; i <= ref.size(); ++i) {
+    for (int j = 0; j <= ref.size(); ++j) {
+      for (int k = 0; k <= ref.size(); ++k) {
+        if (i == j || j == k) {
+          continue;
+        }
 
-    auto result = RunTest(gf, in, c, d);
-    if (!absl::holds_alternative<std::vector<bool>>(result) ||
-        absl::get<std::vector<bool>>(result) != ref) {
-      failures.emplace_back(i);
-    } else {
-      ++num_successes;
-    }
-  }
-  std::cout << "#successes " << num_successes << " #failures "
-            << failures.size() << "\n";
-  if (!failures.empty()) {
-    FAIL() << "failures: " << ::testing::PrintToString(failures) << "\n";
-  }
-}
+        std::vector<bool> in = ref;
+        std::vector<int> flipped;
+        auto flip = [&](int d) {
+          in[d] = !in[d];
+          flipped.push_back(d);
+        };
 
-TEST_F(DecodeBCHTest, Double) {
-  GF16 gf;
-  const int c = 1, d = 7;
+        if (i < ref.size()) flip(i);
+        if (j < ref.size()) flip(j);
+        if (k < ref.size()) flip(k);
 
-  std::vector<std::pair<int, int>> failures;
-  int num_successes = 0;
-
-  std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
-  for (int i = 0; i < ref.size(); ++i) {
-    for (int j = 0; j < ref.size(); ++j) {
-      if (i == j) {
-        continue;
-      }
-
-      std::vector<bool> in = ref;
-      in[i] = !in[i];
-      in[j] = !in[j];
-
-      auto result = RunTest(gf, in, c, d);
-      if (!absl::holds_alternative<std::vector<bool>>(result) ||
-          absl::get<std::vector<bool>>(result) != ref) {
-        failures.emplace_back(i, j);
-      } else {
-        ++num_successes;
+        auto result = RunTest(gf, in, c, d);
+        if (!absl::holds_alternative<std::vector<bool>>(result) ||
+            absl::get<std::vector<bool>>(result) != ref) {
+          failures.push_back(absl::StrJoin(flipped, ","));
+        } else {
+          ++num_successes;
+        }
       }
     }
   }
