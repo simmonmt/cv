@@ -60,11 +60,26 @@ TEST_F(DecodeBCHTest, Single) {
   GF16 gf;
   const int c = 1, d = 7;
 
+  std::vector<int> failures;
+  int num_successes = 0;
+
   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
   for (int i = 0; i < ref.size(); ++i) {
     std::vector<bool> in = ref;
-    EXPECT_THAT(RunTest(gf, in, c, d),
-                VariantWith<std::vector<bool>>(ElementsAreArray(ref)));
+    in[i] = !in[i];
+
+    auto result = RunTest(gf, in, c, d);
+    if (!absl::holds_alternative<std::vector<bool>>(result) ||
+        absl::get<std::vector<bool>>(result) != ref) {
+      failures.emplace_back(i);
+    } else {
+      ++num_successes;
+    }
+  }
+  std::cout << "#successes " << num_successes << " #failures "
+            << failures.size() << "\n";
+  if (!failures.empty()) {
+    FAIL() << "failures: " << ::testing::PrintToString(failures) << "\n";
   }
 }
 

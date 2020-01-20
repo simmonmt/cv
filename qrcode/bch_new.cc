@@ -196,21 +196,21 @@ absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
   }
   lambda.insert(lambda.begin(), 1);
 
-  std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
+  // std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
 
   std::vector<unsigned char> zeros = FindZeros(gf, lambda);
   if (zeros.empty()) {
     return "no zeros found";
   }
 
-  std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
+  // std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
 
   std::vector<bool> out = bits;
   int lim = std::pow(2, gf.m()) - 1;
   for (const unsigned char zero : zeros) {
     int pos = (lim - gf.ToAlphaPow(zero)) % lim;
-    std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
-              << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
+    // std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
+    //           << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
     out[pos] = !out[pos];
   }
 
