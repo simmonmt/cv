@@ -565,7 +565,7 @@ cc_library(
     srcs = ["qr_format.cc"],
     hdrs = ["qr_format.h"],
     deps = [
-        ":bch",
+        ":bch_new",
         ":gf",
         ":qr_array",
         ":qr_error_characteristics",
