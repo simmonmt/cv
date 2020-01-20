@@ -22,6 +22,10 @@ class GFMat {
     arr_[row * w_ + col] = v;
   }
 
+  // Bulk-load values into a matrix. The outer vector should be no larger than
+  // h(), and no inner vector should be larger than w().
+  void Load(const std::vector<std::vector<unsigned char>>& in);
+
   // Return the contents of a given row.
   std::vector<unsigned char> Row(int row);
 

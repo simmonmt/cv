@@ -5,6 +5,14 @@
 
 #include "absl/memory/memory.h"
 
+void GFMat::Load(const std::vector<std::vector<unsigned char>>& in) {
+  for (int row = 0; row < in.size(); ++row) {
+    for (int col = 0; col < in[row].size(); ++col) {
+      Set(row, col, in[row][col]);
+    }
+  }
+}
+
 std::vector<unsigned char> GFMat::Row(int row) {
   std::vector<unsigned char> out(w_);
   for (int i = 0; i < w_; ++i) {
