@@ -236,7 +236,7 @@ absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
   std::vector<bool> out = bits;
   int lim = std::pow(2, gf.m()) - 1;
   for (const unsigned char zero : zeros) {
-    int pos = lim - gf.ToAlphaPow(zero);
+    int pos = (lim - gf.ToAlphaPow(zero)) % lim;
     // std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
     //           << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
     out[pos] = !out[pos];

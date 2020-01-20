@@ -98,7 +98,9 @@ TEST_F(DecodeBCHTest, Double) {
 
   std::cout << "#successes " << num_successes << " #failures "
             << failures.size() << "\n";
-  FAIL() << "failures: " << ::testing::PrintToString(failures) << "\n";
+  if (!failures.empty()) {
+    FAIL() << "failures: " << ::testing::PrintToString(failures) << "\n";
+  }
 }
 
 }  // namespace
