@@ -91,11 +91,17 @@ unsigned char GFSqMat::CalculateDeterminant() const {
 }
 
 std::unique_ptr<GFSqMat> GFSqMat::Inverse() const {
+  auto out = absl::make_unique<GFSqMat>(gf(), sz());
+
+  if (sz() == 1) {
+    out->Set(0, 0, gf().Inverse(Get(0, 0)));
+    return out;
+  }
+
   if (sz() > 2) {
     return nullptr;
   }
 
-  auto out = absl::make_unique<GFSqMat>(gf(), sz());
   out->Set(0, 0, Get(1, 1));
   out->Set(1, 1, Get(0, 0));
   out->Set(1, 0, Get(1, 0));

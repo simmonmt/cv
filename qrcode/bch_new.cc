@@ -150,16 +150,6 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
 }
 
 unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
-  // std::cout << "R " << alpha_power << "\n";
-  // unsigned char base = gf.Pow(0b0010, alpha_power);
-  // unsigned char out_bits = 0;
-  // for (int i = 0; i < poly.size(); ++i) {
-  //   if (poly[i]) {
-  //     out_bits = gf.Add({out_bits, gf.Pow(base, i)});
-  //   }
-  // }
-  // return out_bits;
-
   unsigned char out_bits = 0;
   for (int i = 0; i < poly.size(); ++i) {
     if (poly[i]) {
@@ -173,24 +163,6 @@ unsigned char R(const GF& gf, const std::vector<bool> poly, int alpha_power) {
 
 absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
     const GF& gf, const std::vector<bool>& bits, int c, int d) {
-  // for (const unsigned char mts : gf.PowersOfAlpha()) {
-  //   // unsigned char mts = 0b0010;
-  //   std::cout << "mts " << std::bitset<4>(mts) << " = "
-  //             << std::bitset<4>(gf.Add({gf.Pow(mts, 14), gf.Pow(mts, 13),
-  //                                       gf.Pow(mts, 11), gf.Pow(mts, 10),
-  //                                       gf.Pow(mts, 9), /*gf.Pow(mts, 5),*/
-  //                                       gf.Pow(mts, 4), gf.Pow(mts, 2)}))
-  //             << "\n";
-  // }
-
-  // {
-  //   auto zeros = FindZeros(gf, {0b0001, 0b0001, 0b0011});
-  //   auto pos1 = std::pow(2, gf.m()) - 1 - gf.ToAlphaPow(zeros[0]);
-  //   auto pos2 = std::pow(2, gf.m()) - 1 - gf.ToAlphaPow(zeros[1]);
-  //   std::cout << "MTS " << GFVecToString(gf, zeros) << " pos " << pos1 << " "
-  //             << pos2 << "\n";
-  // }
-
   int s_lo = c;
   int s_hi = c + d - 2;
 
@@ -224,80 +196,23 @@ absl::variant<std::vector<bool>, std::string> DecodeBCHNew(
   }
   lambda.insert(lambda.begin(), 1);
 
-  // std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
+  std::cout << "got lambda " << GFVecToString(gf, lambda) << "\n";
 
   std::vector<unsigned char> zeros = FindZeros(gf, lambda);
   if (zeros.empty()) {
     return "no zeros found";
   }
 
-  // std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
+  std::cout << "got zeros vec " << GFVecToString(gf, zeros) << "\n";
 
   std::vector<bool> out = bits;
   int lim = std::pow(2, gf.m()) - 1;
   for (const unsigned char zero : zeros) {
     int pos = (lim - gf.ToAlphaPow(zero)) % lim;
-    // std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
-    //           << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
+    std::cout << "zero " << std::bitset<4>(zero) << " = alpha^"
+              << gf.ToAlphaPow(zero) << "; flipping " << pos << "\n";
     out[pos] = !out[pos];
   }
 
-  // std::cout << "1110 * 0011 = " << std::bitset<8>(gf.Mult(0b1110, 0b0011))
-  //           << "\n";
-  // std::cout << "1110 * 0011 + 1 = "
-  //           << std::bitset<8>(gf.Add({0b0001, gf.Mult(0b1110, 0b0011)}))
-  //           << "\n";
-
   return out;
 }
-
-// bool RunTest(const std::vector<bool>& expected, const std::vector<bool>&
-// in)
-// {
-//   auto maybe_result = DecodeBCH(gf, in, 1, 7);
-//   if (absl::holds_alternative<std::string>(maybe_result)) {
-//     std::cerr << "bits " << i << "," << j
-//               << " error: " << absl::get<std::string>(maybe_result) <<
-//               "\n";
-//     return false;
-//   }
-
-//   std::vector<bool> result =
-//       std::move(absl::get<std::vector<bool>>(maybe_result));
-//   if (result != ref) {
-//     std::cerr << "bits " << i << "," << j << " mismatch in " << in << " out
-//     "
-//               << result << "\n";
-//     ++num_failure;
-//     continue;
-//   }
-
-//   num_success++;
-// }
-
-// int main(int argc, char** argv) {
-//   GF16 gf;
-
-//   std::vector<bool> ref = {0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1};
-
-//   int num_success = 0, num_failure = 0;
-//   for (int i = 0; i < ref.size(); ++i) {
-//     for (int j = 0; j < ref.size(); ++j) {
-//       std::vector<bool> in = ref;
-//       in[i] = !in[i];
-//       in[j] = !in[j];
-
-//       if (!RunTest(gf, ref, in)) {
-//         ++num_failure;
-//         continue;
-//       }
-
-//       ++numsuccess;
-//     }
-//   }
-
-//   std::cout << "success = " << num_success << "; failure = " << num_failure
-//             << "\n";
-
-//   return 0;
-// }
