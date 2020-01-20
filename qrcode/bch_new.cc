@@ -127,7 +127,7 @@ std::vector<unsigned char> PGZ(const GF& gf, int c, int t,
     // lambda_{v,1}.
     std::unique_ptr<GFSqMat> inv_a = a.Inverse();
 
-    // Step 5 (cont): Calculate ((1/det(S)) * S) * C, which gives us the error
+    // Step 5 (cont): Calculate S^{-1} * C, which gives us the error
     // locator polynomial coefficients lambda_1, lambda_2, ..., lambda_v,
     // forming this polynomial:
     //
